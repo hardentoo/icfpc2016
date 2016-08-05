@@ -7,5 +7,5 @@ main :: IO ()
 main = do
   result <- parseProblem <$> getContents
   case result of
-    Right problem -> mapM_ print (unfolds problem)
+    Right problem -> mapM_ print (problem : unfolds problem)
     Left err -> die (show err)
