@@ -8,7 +8,12 @@ where
 
 import qualified Paper
 import           Problem
-import           Solver
+import           Solution
+import qualified Solver
+
+
+solve :: Problem -> Maybe Solution
+solve = (fmap Paper.toSolution) . Solver.solve . Paper.fromProblem
 
 
 unfolds :: Problem -> [Problem]
