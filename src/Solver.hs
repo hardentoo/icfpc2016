@@ -1,22 +1,19 @@
 module Solver
 where
 
+import Paper
 import Problem
-import Data.Graph.AStar
-import Data.Set (Set)
+import Solution
+import Data.Tree (Tree)
+import qualified Data.Tree as T
+import Data.Maybe (listToMaybe)
 
-unfurl :: Silhouette -> Set Silhouette
-unfurl _ = undefined
-{-
-  for each polygon in the silhouette:
-    for each edge in the polygon:
-      each of:
-        | replicate polygon, reflected across the edge
-        +--| leave skeleton intact
-        |  | trim skeleton
-        | *move* polygon, reflected across the edge
-        +--| leave skeleton intact
-        |  | trim skeleton
-        = filter:
-          in some sense coherent (e.g. total area, adjacency...)
--}
+
+type UnfoldSpace = Tree Paper
+
+
+exploreUnfolds :: Paper -> Tree Paper
+exploreUnfolds paper = T.unfoldTree (\p -> (p, Paper.unfolds p)) paper
+
+solve :: Problem -> Maybe Solution
+solve = (fmap toSolution) . listToMaybe . filter (not . isFolded) . T.flatten . exploreUnfolds . fromProblem

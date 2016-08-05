@@ -1,12 +1,14 @@
 module Main where
 
+import System.IO (hPrint, stderr)
 import           Lib
-import           Solver
 import           System.Exit (die)
 
 main :: IO ()
 main = do
   result <- parseProblem <$> getContents
   case result of
-    Right problem -> print problem -- print (solve problem)
+    Right problem -> case solve problem of
+                       Just solution -> print solution
+                       Nothing -> error "no solution found"
     Left err -> die (show err)

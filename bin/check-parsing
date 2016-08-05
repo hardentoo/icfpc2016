@@ -1,9 +1,0 @@
-#!/bin/sh -e
-THISDIR=$(dirname "$0")
-
-for f in $THISDIR/../problems/problem_*; do
-    echo "----------------"
-    echo -- "$f"
-    echo "----------"
-    stack exec icfpc2016-exe < "$f" | diff -B - "$f"
-done

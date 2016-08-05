@@ -18,6 +18,8 @@ library
   exposed-modules:     Lib
                      , Solver
                      , Problem
+                     , Paper
+                     , Solution
   build-depends:       base >= 4.7 && < 5
                      , containers >= 0.5
                      , parsec >= 3.1
