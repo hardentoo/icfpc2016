@@ -141,7 +141,7 @@ class Renderer {
 
 class Parser {
   static parse(input) {
-    const lines     = input.split("\n");
+    const lines     = input.split("\n").filter(s => s !== "");
     const problems  = [];
 
     while(lines.length > 0) {
