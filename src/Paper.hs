@@ -3,6 +3,7 @@ module Paper where
 import Problem
 import Solution
 import GraphTypes
+import Manipulation
 import Data.List (nub, delete)
 
 data Paper = Paper { facets :: [Facet] }
@@ -39,11 +40,13 @@ unfolds :: Paper -> [Paper]
 unfolds paper = concatMap (unfoldsAlongEdge paper) $ unfoldableEdges paper
 
 isFolded :: Paper -> Bool
-isFolded = undefined
+isFolded (Paper vertices) = undefined
 
 
 mirrorFacet :: Edge -> Facet -> Facet
-mirrorFacet = undefined
+mirrorFacet edge facet = (Facet mirrored) where
+  Facet baseVertices = facet
+  mirrored = mirrorPoints edge baseVertices
 
 
 fromProblem :: Problem -> Paper

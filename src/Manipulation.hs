@@ -1,10 +1,10 @@
 module Manipulation
   (
-    pointsToMatrix
+    mirrorPoints
   )
 where
 
-import GraphTypes (Point, Edge)
+import GraphTypes
 import Data.Matrix
 
 pointsToMatrix :: [Point] -> Matrix Rational
@@ -24,7 +24,7 @@ mirrorPoints edge points = matrixToPoints mirroredMatrix where
   mirroredMatrix = (pointsToMatrix points) * (mirrorMatrix edge)
 
 mirrorMatrix :: Edge -> Matrix Rational
-mirrorMatrix (edge p p') = scaleMatrix normaliser transform where
+mirrorMatrix (Edge p p') = scaleMatrix normaliser transform where
   Point (Coord x) (Coord y)   = p
   Point (Coord x') (Coord y') = p'
   normaliser = 1 / ((x' - x)^2 + (y' - y)^2)

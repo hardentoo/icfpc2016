@@ -1,4 +1,9 @@
 module GraphTypes
+  (
+    Edge(..)
+  , Coord(..)
+  , Point(..)
+  )
 where
 
 import           Data.Ratio         (denominator, numerator, (%))

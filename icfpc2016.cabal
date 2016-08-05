@@ -21,6 +21,7 @@ library
                      , Paper
                      , Solution
                      , GraphTypes
+                     , Manipulation
   build-depends:       base >= 4.7 && < 5
                      , containers >= 0.5
                      , parsec >= 3.1
