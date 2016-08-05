@@ -2,37 +2,56 @@ module Lib
 where
 
 import           Control.Monad      (replicateM)
-import           Data.Ratio         ((%))
+import           Data.Ratio         (denominator, numerator, (%))
 import           Text.Parsec        hiding (State)
 import           Text.Parsec.String
 
 
 data Problem = Problem Silhouette
-  deriving Show
 
 data Silhouette = Silhouette [Polygon] Skeleton
-  deriving Show
 
-type Coord = Rational
+data Coord = Coord Rational
 
 data Point = Point { pointX :: Coord
                    , pointY :: Coord }
-  deriving Show
 
 data Segment = Segment { segmentStart :: Point, segmentEnd :: Point }
-  deriving Show
 
 data Skeleton = Skeleton [Segment]
-  deriving Show
 
 data Polygon = Polygon { polygonVertices :: [Point] }
-  deriving Show
 
-data Solution = Solution
-  deriving Show
+-- data Solution = Solution
 
-solve :: Problem -> Solution
-solve = undefined
+-- solve :: Problem -> Solution
+-- solve = undefined
+
+
+instance Show Problem where
+  show (Problem s) = show s ++ "\n"
+
+instance Show Silhouette where
+  show (Silhouette polys skel) =
+    show (length polys) ++ "\n" ++ concatMap show polys ++ show skel
+
+instance Show Polygon where
+  show (Polygon verts) =
+    show (length verts) ++ "\n" ++ unlines (show <$> verts)
+
+instance Show Point where
+  show (Point x y) = show x ++ "," ++ show y
+
+instance Show Coord where
+  show (Coord amount) = show (numerator amount) ++
+    if 1 /= denominator amount then "/" ++ show (denominator amount) else ""
+
+instance Show Skeleton where
+  show (Skeleton segs) =
+    show (length segs) ++ "\n" ++ unlines (show <$> segs)
+
+instance Show Segment where
+  show (Segment start end) = show start ++ " " ++ show end
 
 
 
@@ -49,7 +68,7 @@ parseCoord :: Parser Coord
 parseCoord = do
   numerator <- parseNat
   denominator <- try (char '/' *> parseNat) <|> pure 1
-  pure (fromIntegral numerator % fromIntegral denominator)
+  pure $ Coord (fromIntegral numerator % fromIntegral denominator)
 
 parsePoint :: Parser Point
 parsePoint = Point <$> (parseCoord <* char ',') <*> parseCoord
