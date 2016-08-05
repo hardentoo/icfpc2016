@@ -17,8 +17,6 @@ window.addEventListener("DOMContentLoaded", function() {
 
     maxProblems.innerText = window.problemSet.length;
     currentProblem.value = window.currentProblem + 1;
-
-
   }
 
   const renderPreviews = function() { 
@@ -69,9 +67,16 @@ window.addEventListener("DOMContentLoaded", function() {
     renderUI();
   }
 
+  const onKeyDown = function(event) {
+    if(event.key == "ArrowLeft" || event.key == "ArrowUp") { onPrev(); }
+    else if(event.key == "ArrowRight" || event.key == "ArrowDown") { onNext(); }
+  }
+
   parseButton.addEventListener("click", onParse);
   prevButton.addEventListener("click", onPrev);
   nextButton.addEventListener("click", onNext);
+
+  window.addEventListener("keydown", onKeyDown);
   onParse();
 });
 
