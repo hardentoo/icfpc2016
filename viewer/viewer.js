@@ -164,10 +164,10 @@ class Renderer {
       this.context.font = "14px sans-serif";
 
       if(renderLabels) {
-        this.context.fillText(set.x0, left + 4, top + height + 16, 20);
-        this.context.fillText(set.x1, left + width, top + height + 16, 20);
-        this.context.fillText(set.y0, left - 25, top + height, 20);
-        this.context.fillText(set.y1, left - 25, top + 12, 20);
+        this.context.fillText(set.x0.toString().slice(0, 5), left + 4, top + height + 16, 20);
+        this.context.fillText(set.x1.toString().slice(0, 5), left + width, top + height + 16, 20);
+        this.context.fillText(set.y0.toString().slice(0, 5), left - 25, top + height, 20);
+        this.context.fillText(set.y1.toString().slice(0, 5), left - 25, top + 12, 20);
       }
     }
   }
