@@ -26,7 +26,6 @@ unfoldFacetAlongEdge (Paper vertices) edge facet = [moved, retained] where
   retained = Paper (mirrored:vertices)
   mirrored = mirrorFacet edge facet
 
-
 -- Are we missing some filter here? The restriction is implicitly in "the
 -- unfolded result is inconsistent"...
 unfoldableEdges :: Paper -> [Edge]
@@ -40,7 +39,9 @@ unfolds :: Paper -> [Paper]
 unfolds paper = concatMap (unfoldsAlongEdge paper) $ unfoldableEdges paper
 
 isFolded :: Paper -> Bool
-isFolded (Paper vertices) = undefined
+isFolded (Paper facets) = union /= 1 where
+  vertices = map (\(Facet vertices) -> vertices) facets
+  union = areaSum vertices
 
 
 mirrorFacet :: Edge -> Facet -> Facet
