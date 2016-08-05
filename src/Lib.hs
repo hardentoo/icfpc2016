@@ -20,7 +20,19 @@ data Segment = Segment { segmentStart :: Point, segmentEnd :: Point }
 
 data Skeleton = Skeleton [Segment]
 
-data Polygon = Polygon { polygonVertices :: [Point] }
+data PolygonType = PositivePoly | NegativePoly
+
+data Polygon = Polygon { polygonType     :: PolygonType
+                       , polygonVertices :: [Point] }
+
+
+pointsAreClockwise :: [Point] -> Bool
+pointsAreClockwise [] = True
+pointsAreClockwise xs@(x:rest) = 0 < sum (uncurry crossProduct <$> zip xs (rest ++ [x]))
+  -- shoelace https://en.wikipedia.org/wiki/Shoelace_formula
+  where crossProduct (Point (Coord x) (Coord y)) (Point (Coord x') (Coord y')) = (x' - x) * (y + y')
+
+
 
 -- data Solution = Solution
 
@@ -36,8 +48,12 @@ instance Show Silhouette where
     show (length polys) ++ "\n" ++ concatMap show polys ++ show skel
 
 instance Show Polygon where
-  show (Polygon verts) =
-    show (length verts) ++ "\n" ++ unlines (show <$> verts)
+  show (Polygon polytype verts) =
+    show (length sortedVerts) ++ "\n" ++ unlines (show <$> sortedVerts)
+    where sortedVerts = case (polytype, pointsAreClockwise verts) of
+            (PositivePoly, True) -> reverse verts
+            (NegativePoly, False) -> reverse verts
+            _ -> verts
 
 instance Show Point where
   show (Point x y) = show x ++ "," ++ show y
@@ -60,7 +76,10 @@ parseNat :: Parser Integer
 parseNat = read <$> many1 digit <?> "number"
 
 parsePolygon :: Parser Polygon
-parsePolygon = Polygon <$> parseCounted (parsePoint <* newline)
+parsePolygon = do
+  points <- parseCounted (parsePoint <* newline)
+  let polyType = if pointsAreClockwise points then NegativePoly else PositivePoly
+  pure $ Polygon polyType points
 
 parseCoord :: Parser Coord
 parseCoord = do
