@@ -2,10 +2,14 @@
 
 require 'erb'
 
-content = $stdin.readlines.join
+THIS_DIR = File.dirname(__FILE__)
 
-f = File.open("#{File.dirname(__FILE__)}/../viewer/viewer.html", "w")
-f.write ERB.new(File.open("#{File.dirname(__FILE__)}/../viewer/viewer.html.erb").read).result(binding)
-f.close
+viewer_html = File.join(THIS_DIR, '../viewer/viewer.html')
 
-system("open #{File.dirname(__FILE__)}/../viewer/viewer.html")
+content = ARGF.read
+
+templated = ERB.new(File.read("#{viewer_html}.erb")).result(binding)
+
+File.open(viewer_html, "w") { |f| f.write(templated) }
+
+system("open #{viewer_html}")
