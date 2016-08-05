@@ -1,0 +1,13 @@
+#!/bin/sh -e
+
+THISDIR=$(dirname "$0")
+PROBLEM_ID=$1
+
+if [ -z "$PROBLEM_ID" ]; then
+    echo "usage $0 problem_id" >&2
+    exit 1
+fi
+
+SOLUTION_FILE="$THISDIR/../solutions/solution_$PROBLEM_ID"
+
+curl --compressed -L -H Expect: -H 'X-API-Key: 104-4312cd6ad95ea4b946d773de63a74b8b' -F "problem_id=$PROBLEM_ID" -F "solution_spec=@$SOLUTION_FILE" 'http://2016sv.icfpcontest.org/api/solution/submit'
