@@ -2,13 +2,21 @@ module Paper where
 
 import Problem
 import Solution
+import Data.List (nub)
 
 
-data Paper
+data Paper = Paper { facets :: [Facet] }
 
-data Edge
+data Edge  = Edge { start :: Point
+                  , end :: Point }
+  deriving Eq
 
-data Facet
+data Facet = Facet { vertices :: [Point] }
+
+edgesAboutFacet :: Facet -> [Edge]
+edgesAboutFacet (Facet vertices) = map edges pairs where
+  pairs = zip vertices (tail $ cycle vertices)
+  edges (start, end) = Edge start end
 
 facetsAlongEdge :: Paper -> Edge -> [Facet]
 facetsAlongEdge = undefined
@@ -16,8 +24,10 @@ facetsAlongEdge = undefined
 unfoldFacetAlongEdge :: Paper -> Edge -> Facet -> [Paper]
 unfoldFacetAlongEdge = undefined
 
+-- Are we missing some filter here? The restriction is implicitly in "the
+-- unfolded result is inconsistent"...
 unfoldableEdges :: Paper -> [Edge]
-unfoldableEdges = undefined
+unfoldableEdges (Paper facets) = nub $ concatMap edgesAboutFacet facets
 
 unfoldsAlongEdge :: Paper -> Edge -> [Paper]
 unfoldsAlongEdge paper edge = concatMap (unfoldFacetAlongEdge paper edge) facets

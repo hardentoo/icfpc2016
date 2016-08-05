@@ -12,9 +12,11 @@ data Problem = Problem Silhouette
 data Silhouette = Silhouette [Polygon] Skeleton
 
 data Coord = Coord Rational
+  deriving Eq
 
 data Point = Point { pointX :: Coord
                    , pointY :: Coord }
+  deriving Eq
 
 data Segment = Segment { segmentStart :: Point, segmentEnd :: Point }
 
