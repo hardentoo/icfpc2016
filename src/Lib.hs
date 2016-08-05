@@ -29,7 +29,7 @@ data Polygon = Polygon { polygonVertices :: [Point] }
 
 
 instance Show Problem where
-  show (Problem s) = show s ++ "\n"
+  show (Problem s) = show s
 
 instance Show Silhouette where
   show (Silhouette polys skel) =
@@ -56,19 +56,17 @@ instance Show Segment where
 
 
 -- PARSING
-parseNat :: Parser Int
+parseNat :: Parser Integer
 parseNat = read <$> many1 digit <?> "number"
 
 parsePolygon :: Parser Polygon
-parsePolygon = do
-  vertexCount <- parseNat <* newline
-  Polygon <$> replicateM vertexCount (parsePoint <* newline)
+parsePolygon = Polygon <$> parseCounted (parsePoint <* newline)
 
 parseCoord :: Parser Coord
 parseCoord = do
   numerator <- parseNat
   denominator <- try (char '/' *> parseNat) <|> pure 1
-  pure $ Coord (fromIntegral numerator % fromIntegral denominator)
+  pure $ Coord (numerator % denominator)
 
 parsePoint :: Parser Point
 parsePoint = Point <$> (parseCoord <* char ',') <*> parseCoord
@@ -76,16 +74,16 @@ parsePoint = Point <$> (parseCoord <* char ',') <*> parseCoord
 parseSegment :: Parser Segment
 parseSegment = Segment <$> (parsePoint <* space) <*> parsePoint <* newline
 
+parseCounted :: Parser a -> Parser [a]
+parseCounted p = do
+  count <- parseNat <* newline
+  replicateM (fromIntegral count) p
+
 parseSkeleton :: Parser Skeleton
-parseSkeleton = do
-  segmentCount <- parseNat <* newline
-  Skeleton <$> replicateM segmentCount parseSegment
+parseSkeleton = Skeleton <$> parseCounted parseSegment
 
 parseSilhouette :: Parser Silhouette
-parseSilhouette = do
-  polyCount <- parseNat <* newline
-  Silhouette <$> replicateM polyCount parsePolygon
-             <*> parseSkeleton
+parseSilhouette = Silhouette <$> parseCounted parsePolygon <*> parseSkeleton
 
 parseProblem :: String -> Either ParseError Problem
 parseProblem input = Problem <$> runP (parseSilhouette <* eof) () "<string>" input
