@@ -3,16 +3,17 @@ module Problem where
 
 import           Control.Monad      (replicateM)
 import           Data.Ratio         (denominator, numerator, (%))
+import           GraphTypes
 import           Text.Parsec        hiding (State)
 import           Text.Parsec.String
-import           GraphTypes
 
 
-data Problem = Problem Silhouette
+data Problem = Problem { probSilhouette :: Silhouette }
 
-data Silhouette = Silhouette [Polygon] Skeleton
+data Silhouette = Silhouette { silPoly :: [Polygon]
+                             , silSkel :: Skeleton }
 
-data Skeleton = Skeleton [Edge]
+data Skeleton = Skeleton { skelEdges :: [Edge] }
 
 data PolygonType = PositivePoly | NegativePoly
 
