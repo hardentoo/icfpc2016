@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style>
+      canvas {
+        border: 1px solid black;
+      }
+
+      #problem-viewer {
+        display: inline-block;
+      }
+
+      #controls {
+        text-align: center;
+      }
+
+      #controls input {
+        width: 20px;
+      }
+
+      .preview-canvas {
+        padding: 10px;
+      }er
+    </style>
+  </head>
+    <title>Viewer</title>
+  <body>
+    <div id="problem-viewer">
+      <canvas width="500" height="500"></canvas>
+
+      <br />
+
+      <div id="controls">
+        <button id="prev-button">&lt;</button>
+        <input type="text" id="current-problem" /> / <span id="problems-count"></span>
+        <button id="next-button">&gt;</button>
+      </div>
+
+    </div>
+
+    <div id="previews">
+    </div>
+
+    <textarea cols="80" rows="60">1
+4
+0,0
+1,0
+1/2,1/2
+0,1/2
+5
+0,0 1,0
+1,0 1/2,1/2
+1/2,1/2 0,1/2
+0,1/2 0,0
+0,0 1/2,1/2
+1
+4
+0,0
+1,0
+1/2,1/2
+0,1
+7
+0,0 1,0
+1,0 1/2,1/2
+1/2,1/2 0,1/2
+0,1/2 0,0
+0,0 1/2,1/2
+0,1/2 0,1
+1/2,1/2 0,1
+1
+4
+0,0
+0,1
+1,1
+1,0
+9
+0,0 1,0
+1,0 1/2,1/2
+1/2,1/2 0,1/2
+0,1/2 0,0
+0,0 1/2,1/2
+0,1/2 0,1
+1/2,1/2 0,1
+1,0 1,1
+0,1 1,1</textarea>
+
+    <button id="parse-button">Parse</button>
+
+    <script src="viewer.js" type="text/javascript"></script>
+  </body>
+</html>

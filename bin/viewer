@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+require 'erb'
+
+erb = ERB.new(File.open("#{File.dirname(__FILE__)}/../viewer/viewer.html.erb").read)
+content = $stdin.readlines.join
+
+f = File.open("#{File.dirname(__FILE__)}/../viewer/viewer.html", "w")
+f.write erb.result(binding)
+f.close
+
+system("open #{File.dirname(__FILE__)}/../viewer/viewer.html")
