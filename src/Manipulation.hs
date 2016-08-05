@@ -19,10 +19,9 @@ destructure (Point (Coord x) (Coord y)) = [x,y]
 restructure :: [Rational] -> Point
 restructure [x,y] = Point (Coord x) (Coord y)
 
-
-mirrorPoints :: [Point] -> Segment -> Point
-mirrorPoints _ _ = undefined
-
+mirrorPoints :: Segment -> [Point] -> [Point]
+mirrorPoints segment points = matrixToPoints mirroredMatrix where
+  mirroredMatrix = (pointsToMatrix points) * (mirrorMatrix segment)
 
 mirrorMatrix :: Segment -> Matrix Rational
 mirrorMatrix (Segment p p') = scaleMatrix normaliser transform where
