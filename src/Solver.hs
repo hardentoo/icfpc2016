@@ -1,7 +1,7 @@
 module Solver
 where
 
-import Lib
+import Problem
 import Data.Graph.AStar
 import Data.Set (Set)
 
