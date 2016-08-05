@@ -1,0 +1,43 @@
+name:                icfpc2016
+version:             0.1.0.0
+synopsis:            Team entry for the 2016 ICFP Contest
+description:         Please see README.md
+homepage:            https://github.com/bagedevimo/icfpc2016#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Powershop New Zealand
+maintainer:          steve@sanityinc.com
+copyright:           2016 Powershop New Zealand Ltd
+category:            Web
+build-type:          Simple
+-- extra-source-files:
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Lib
+  build-depends:       base >= 4.7 && < 5
+  default-language:    Haskell2010
+
+executable icfpc2016-exe
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base
+                     , icfpc2016
+                     , containers >= 0.5
+                     , parsec >= 3.1
+  default-language:    Haskell2010
+
+test-suite icfpc2016-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , icfpc2016
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/bagedevimo/icfpc2016
