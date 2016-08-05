@@ -1,6 +1,7 @@
 module Main where
 
 import           Lib
+import           Solver
 import           System.Exit (die)
 
 main :: IO ()
