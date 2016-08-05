@@ -73,7 +73,13 @@ instance Show Segment where
 
 -- PARSING
 parseNat :: Parser Integer
-parseNat = read <$> many1 digit <?> "number"
+parseNat = read <$> many1 digit <?> "non-negative number"
+
+parseInt :: Parser Integer
+parseInt = do
+  sign <- try (char '-') <|> pure '+'
+  digits <- many1 digit
+  (return . (* (if sign == '-' then -1 else 1)) . read $ digits) <?> "number"
 
 parsePolygon :: Parser Polygon
 parsePolygon = do
@@ -83,7 +89,7 @@ parsePolygon = do
 
 parseCoord :: Parser Coord
 parseCoord = do
-  numerator <- parseNat
+  numerator <- parseInt
   denominator <- try (char '/' *> parseNat) <|> pure 1
   pure $ Coord (numerator % denominator)
 
