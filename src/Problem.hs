@@ -5,22 +5,14 @@ import           Control.Monad      (replicateM)
 import           Data.Ratio         (denominator, numerator, (%))
 import           Text.Parsec        hiding (State)
 import           Text.Parsec.String
+import           GraphTypes
 
 
 data Problem = Problem Silhouette
 
 data Silhouette = Silhouette [Polygon] Skeleton
 
-data Coord = Coord Rational
-  deriving Eq
-
-data Point = Point { pointX :: Coord
-                   , pointY :: Coord }
-  deriving Eq
-
-data Segment = Segment { segmentStart :: Point, segmentEnd :: Point }
-
-data Skeleton = Skeleton [Segment]
+data Skeleton = Skeleton [Edge]
 
 data PolygonType = PositivePoly | NegativePoly
 
@@ -50,20 +42,9 @@ instance Show Polygon where
             (NegativePoly, False) -> reverse verts
             _ -> verts
 
-instance Show Point where
-  show (Point x y) = show x ++ "," ++ show y
-
-instance Show Coord where
-  show (Coord amount) = show (numerator amount) ++
-    if 1 /= denominator amount then "/" ++ show (denominator amount) else ""
-
 instance Show Skeleton where
   show (Skeleton segs) =
     show (length segs) ++ "\n" ++ unlines (show <$> segs)
-
-instance Show Segment where
-  show (Segment start end) = show start ++ " " ++ show end
-
 
 
 -- PARSING
@@ -91,8 +72,8 @@ parseCoord = do
 parsePoint :: Parser Point
 parsePoint = Point <$> (parseCoord <* char ',') <*> parseCoord
 
-parseSegment :: Parser Segment
-parseSegment = Segment <$> (parsePoint <* space) <*> parsePoint <* newline
+parseEdge :: Parser Edge
+parseEdge = Edge <$> (parsePoint <* space) <*> parsePoint <* newline
 
 parseCounted :: Parser a -> Parser [a]
 parseCounted p = do
@@ -100,7 +81,7 @@ parseCounted p = do
   replicateM (fromIntegral count) p
 
 parseSkeleton :: Parser Skeleton
-parseSkeleton = Skeleton <$> parseCounted parseSegment
+parseSkeleton = Skeleton <$> parseCounted parseEdge
 
 parseSilhouette :: Parser Silhouette
 parseSilhouette = Silhouette <$> parseCounted parsePolygon <*> parseSkeleton

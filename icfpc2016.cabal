@@ -20,6 +20,7 @@ library
                      , Problem
                      , Paper
                      , Solution
+                     , GraphTypes
   build-depends:       base >= 4.7 && < 5
                      , containers >= 0.5
                      , parsec >= 3.1

@@ -4,7 +4,7 @@ module Manipulation
   )
 where
 
-import Problem
+import GraphTypes (Point, Edge)
 import Data.Matrix
 
 pointsToMatrix :: [Point] -> Matrix Rational
@@ -19,12 +19,12 @@ destructure (Point (Coord x) (Coord y)) = [x,y]
 restructure :: [Rational] -> Point
 restructure [x,y] = Point (Coord x) (Coord y)
 
-mirrorPoints :: Segment -> [Point] -> [Point]
-mirrorPoints segment points = matrixToPoints mirroredMatrix where
-  mirroredMatrix = (pointsToMatrix points) * (mirrorMatrix segment)
+mirrorPoints :: Edge -> [Point] -> [Point]
+mirrorPoints edge points = matrixToPoints mirroredMatrix where
+  mirroredMatrix = (pointsToMatrix points) * (mirrorMatrix edge)
 
-mirrorMatrix :: Segment -> Matrix Rational
-mirrorMatrix (Segment p p') = scaleMatrix normaliser transform where
+mirrorMatrix :: Edge -> Matrix Rational
+mirrorMatrix (edge p p') = scaleMatrix normaliser transform where
   Point (Coord x) (Coord y)   = p
   Point (Coord x') (Coord y') = p'
   normaliser = 1 / ((x' - x)^2 + (y' - y)^2)
