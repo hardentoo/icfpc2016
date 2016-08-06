@@ -7,8 +7,11 @@ import           System.Exit        (die)
 
 main :: IO ()
 main = do
-  depth <- read . fromMaybe "1" . listToMaybe <$> getArgs
+  depthArg <- fromMaybe "1" . listToMaybe <$> getArgs
   result <- parseProblem <$> getContents
   case result of
-    Right problem -> mapM_ print $ unfoldsToLevel depth problem
+    Right problem ->
+      mapM_ print $ case depthArg of
+                      ('@':rest) -> historyOfUnfolding (read rest) problem
+                      _          -> unfoldsToLevel (read depthArg) problem
     Left err -> die (show err)

@@ -7,11 +7,11 @@ import qualified Data.Tree  as T
 import           Paper
 
 
-type UnfoldSpace = Tree Paper
+-- Each node in the resulting tree carries a current paper and its
+-- previous folded states
+exploreUnfolds :: Paper -> Tree [Paper]
+exploreUnfolds paper = T.unfoldTree (\ps@(p:_) -> (ps, (:ps) <$> Paper.unfolds p)) [paper]
 
-
-exploreUnfolds :: Paper -> Tree Paper
-exploreUnfolds paper = T.unfoldTree (\p -> (p, Paper.unfolds p)) paper
-
-solve :: Paper -> Maybe Paper
-solve = listToMaybe . filter (not . isFolded) . T.flatten . exploreUnfolds
+-- Find a solution together with its previous folded states
+solve :: Paper -> Maybe [Paper]
+solve = listToMaybe . filter (not . isFolded . head) . T.flatten . exploreUnfolds
