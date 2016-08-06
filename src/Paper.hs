@@ -19,11 +19,10 @@ polygonsAlongEdge :: Paper -> Edge -> [Polygon]
 polygonsAlongEdge (Paper polygons) edge = filter (elem edge . polygonEdges) polygons
 
 unfoldPolygonsAlongEdge :: Paper -> Edge -> [Polygon] -> [Paper]
-unfoldPolygonsAlongEdge paper edge polygons = filter isConsistent [moved, retained] where
-  moved    = Paper (mirrored ++ (paperPolygons paper \\ polygons))
+unfoldPolygonsAlongEdge paper edge polygons = filter isConsistent [retained] where
+  --moved    = Paper (mirrored ++ (paperPolygons paper \\ polygons))
   retained = Paper (mirrored ++ paperPolygons paper)
   mirrored = map (mirrorPolygon edge) polygons
-
 
 -- Are we missing some filter here? The restriction is implicitly in "the
 -- unfolded result is inconsistent"...
