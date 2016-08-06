@@ -127,7 +127,7 @@ class Renderer {
     console.log("y1:", set.y1);
     console.log("set:", set);
 
-    this.context.clearRect(0, 0, width, height);
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     for(let polygon of problem.polygons) {
       this.context.beginPath();
 
