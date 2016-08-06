@@ -1,37 +1,38 @@
 module Paper where
 
-import           Data.List    ((\\), nub)
+import           Data.List    (nub, (\\))
 import           Data.Ratio   ((%))
 import           GraphTypes
 import           Manipulation
 import           Problem
 import qualified Solution
 
-data Paper = Paper { facets :: [Facet] }
+data Paper = Paper { paperFacets :: [Facet] }
+  deriving Show
 
-data Facet = Facet { vertices :: [Point] }
-  deriving Eq
+data Facet = Facet { facetVertices :: [Point] }
+  deriving (Eq, Show)
 
 edgesAboutFacet :: Facet -> [Edge]
-edgesAboutFacet (Facet vertices) = map edges pairs where
-  pairs = zip vertices (tail $ cycle vertices)
-  edges (start, end) = Edge start end
+edgesAboutFacet (Facet vertices) = map (uncurry Edge) pairs
+  where
+    pairs = zip vertices (tail $ cycle vertices)
 
 facetsAlongEdge :: Paper -> Edge -> [Facet]
 facetsAlongEdge (Paper facets) edge = filter adjacent facets where
   adjacent facet = edge `elem` (edgesAboutFacet facet)
 
 unfoldFacetsAlongEdge :: Paper -> Edge -> [Facet] -> [Paper]
-unfoldFacetsAlongEdge (Paper vertices) edge facets = filter isConsistent [moved, retained] where
-  moved    = Paper (mirrored ++ (vertices \\ facets))
-  retained = Paper (mirrored ++ vertices)
+unfoldFacetsAlongEdge paper edge facets = filter isConsistent [moved, retained] where
+  moved    = Paper (mirrored ++ (paperFacets paper \\ facets))
+  retained = Paper (mirrored ++ paperFacets paper)
   mirrored = map (mirrorFacet edge) facets
 
 
 -- Are we missing some filter here? The restriction is implicitly in "the
 -- unfolded result is inconsistent"...
 unfoldableEdges :: Paper -> [Edge]
-unfoldableEdges (Paper facets) = nub $ concatMap edgesAboutFacet facets
+unfoldableEdges = nub . concatMap edgesAboutFacet . paperFacets
 
 -- This actually isn't all of the possibilities...
 unfoldsAlongEdge :: Paper -> Edge -> [Paper]
@@ -46,33 +47,28 @@ powerset (x:xs) = powerset xs ++ map (x:) (powerset xs)
 unfolds :: Paper -> [Paper]
 unfolds paper = concatMap (unfoldsAlongEdge paper) $ unfoldableEdges paper
 
+unionArea :: Paper -> Rational
+unionArea = areaSum . (fmap facetVertices) . paperFacets
+
 isFolded :: Paper -> Bool
-isFolded (Paper facets) = union /= 1 where
-  vertices = map (\(Facet vertices) -> vertices) facets
-  union = areaSum vertices
+isFolded = (1 /=) . unionArea
 
 isConsistent  :: Paper -> Bool
-isConsistent (Paper facets) = union <= 1 where
-  vertices = map (\(Facet vertices) -> vertices) facets
-  union = areaSum vertices
+isConsistent = (1 >=) . unionArea
 
 mirrorFacet :: Edge -> Facet -> Facet
-mirrorFacet edge facet = (Facet mirrored) where
-  Facet baseVertices = facet
-  mirrored = mirrorPoints edge baseVertices
+mirrorFacet edge = Facet . mirrorPoints edge . facetVertices
 
 -- The joys of conversion
 
 fromProblem :: Problem -> Paper
-fromProblem (Problem silhouette) = Paper facets where
-  Silhouette polys skeleton = silhouette
-  facets = map (\(Polygon _ points) -> (Facet points)) polys
+fromProblem = Paper . map (Facet . polygonVertices) . silPoly . probSilhouette
 
 toProblem :: Paper -> Problem
-toProblem (Paper facets) = Problem silhouette where
-  silhouette = Silhouette polys skeleton
-  skeleton   = Skeleton $ concatMap edgesAboutFacet facets
-  polys      = [(Polygon PositivePoly points) | points <- map (\(Facet points) -> points) facets]
+toProblem (Paper facets) =
+  Problem (Silhouette
+           ((Polygon PositivePoly) <$> facetVertices <$> facets)
+           (Skeleton $ concatMap edgesAboutFacet facets))
 
 toSolution :: Paper -> Solution.Solution
 toSolution = undefined
