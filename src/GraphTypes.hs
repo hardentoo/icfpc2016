@@ -12,7 +12,7 @@ module GraphTypes
   )
 where
 
-import           Data.List  (nub, union)
+import           Data.List  (intersect, nub, union)
 import           Data.Ratio (denominator, numerator, (%))
 
 
@@ -21,6 +21,9 @@ data Edge  = Edge { start :: Point
 
 instance Eq Edge where
   Edge a b == Edge a' b' = (a, b) == (a', b') || (a, b) == (b', a')
+
+edgesMeet :: Edge -> Edge -> Bool
+edgesMeet (Edge a b) (Edge a' b') = not (null (intersect [a, b] [a', b']))
 
 squaredEdgeLength :: Num a => Edge -> Rational
 squaredEdgeLength e = squaredDistanceBetween (start e) (end e)
