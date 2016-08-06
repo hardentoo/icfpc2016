@@ -15,18 +15,6 @@ data Silhouette = Silhouette { silPoly :: [Polygon]
 
 data Skeleton = Skeleton { skelEdges :: [Edge] }
 
-data PolygonType = PositivePoly | NegativePoly
-
-data Polygon = Polygon { polygonType     :: PolygonType
-                       , polygonVertices :: [Point] }
-
-
-pointsAreClockwise :: [Point] -> Bool
-pointsAreClockwise [] = True
-pointsAreClockwise xs@(x:rest) = 0 < sum (uncurry crossProduct <$> zip xs (rest ++ [x]))
-  -- shoelace https://en.wikipedia.org/wiki/Shoelace_formula
-  where crossProduct (Point (Coord x) (Coord y)) (Point (Coord x') (Coord y')) = (x' - x) * (y + y')
-
 
 instance Show Problem where
   show (Problem s) = show s
@@ -34,14 +22,6 @@ instance Show Problem where
 instance Show Silhouette where
   show (Silhouette polys skel) =
     show (length polys) ++ "\n" ++ concatMap show polys ++ show skel
-
-instance Show Polygon where
-  show (Polygon polytype verts) =
-    show (length sortedVerts) ++ "\n" ++ unlines (show <$> sortedVerts)
-    where sortedVerts = case (polytype, pointsAreClockwise verts) of
-            (PositivePoly, True) -> reverse verts
-            (NegativePoly, False) -> reverse verts
-            _ -> verts
 
 instance Show Skeleton where
   show (Skeleton segs) =

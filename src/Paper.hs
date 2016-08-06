@@ -7,41 +7,34 @@ import           Manipulation
 import           Problem
 import qualified Solution
 
-data Paper = Paper { paperFacets :: [Facet] }
+data Paper = Paper { paperPolygons :: [Polygon] }
   deriving Show
 
 instance Eq Paper where
   p1 == p2 = null $ ldiff `union` rdiff where
-    ldiff = (paperFacets p1) \\ (paperFacets p2)
-    rdiff = (paperFacets p2) \\ (paperFacets p1)
+    ldiff = (paperPolygons p1) \\ (paperPolygons p2)
+    rdiff = (paperPolygons p2) \\ (paperPolygons p1)
 
-data Facet = Facet { facetVertices :: [Point] }
-  deriving (Eq, Show)
+polygonsAlongEdge :: Paper -> Edge -> [Polygon]
+polygonsAlongEdge (Paper polygons) edge = filter (elem edge . polygonEdges) polygons
 
-
-facetEdges :: Facet -> [Edge]
-facetEdges (Facet vertices) = (uncurry Edge) <$> zip vertices (tail $ cycle vertices)
-
-facetsAlongEdge :: Paper -> Edge -> [Facet]
-facetsAlongEdge (Paper facets) edge = filter (elem edge . facetEdges) facets
-
-unfoldFacetsAlongEdge :: Paper -> Edge -> [Facet] -> [Paper]
-unfoldFacetsAlongEdge paper edge facets = filter isConsistent [moved, retained] where
-  moved    = Paper (mirrored ++ (paperFacets paper \\ facets))
-  retained = Paper (mirrored ++ paperFacets paper)
-  mirrored = map (mirrorFacet edge) facets
+unfoldPolygonsAlongEdge :: Paper -> Edge -> [Polygon] -> [Paper]
+unfoldPolygonsAlongEdge paper edge polygons = filter isConsistent [moved, retained] where
+  moved    = Paper (mirrored ++ (paperPolygons paper \\ polygons))
+  retained = Paper (mirrored ++ paperPolygons paper)
+  mirrored = map (mirrorPolygon edge) polygons
 
 
 -- Are we missing some filter here? The restriction is implicitly in "the
 -- unfolded result is inconsistent"...
 unfoldableEdges :: Paper -> [Edge]
-unfoldableEdges = nub . concatMap facetEdges . paperFacets
+unfoldableEdges = nub . concatMap polygonEdges . paperPolygons
 
 -- This actually isn't all of the possibilities...
 unfoldsAlongEdge :: Paper -> Edge -> [Paper]
-unfoldsAlongEdge paper edge = concatMap (unfoldFacetsAlongEdge paper edge) facetSets
+unfoldsAlongEdge paper edge = concatMap (unfoldPolygonsAlongEdge paper edge) polygonSets
   where
-    facetSets = filter (not . null) . powerset $ (paperFacets paper)
+    polygonSets = filter (not . null) . powerset $ (paperPolygons paper)
 
 powerset :: [a] -> [[a]]
 powerset [] = [[]]
@@ -53,7 +46,7 @@ unfolds paper
   | otherwise = []
 
 unionArea :: Paper -> Rational
-unionArea = areaSum . (fmap facetVertices) . paperFacets
+unionArea = areaSum . (fmap polygonVertices) . paperPolygons
 
 isFolded :: Paper -> Bool
 isFolded = (1 /=) . unionArea
@@ -61,19 +54,19 @@ isFolded = (1 /=) . unionArea
 isConsistent :: Paper -> Bool
 isConsistent = (1 >=) . unionArea
 
-mirrorFacet :: Edge -> Facet -> Facet
-mirrorFacet edge = Facet . mirrorPoints edge . facetVertices
+mirrorPolygon :: Edge -> Polygon -> Polygon
+mirrorPolygon edge = Polygon PositivePoly . mirrorPoints edge . polygonVertices
 
 -- The joys of conversion
 
 fromProblem :: Problem -> Paper
-fromProblem = Paper . map (Facet . polygonVertices) . silPoly . probSilhouette
+fromProblem = Paper . map (Polygon PositivePoly . polygonVertices) . silPoly . probSilhouette
 
 toProblem :: Paper -> Problem
-toProblem (Paper facets) =
+toProblem (Paper polygons) =
   Problem (Silhouette
-           ((Polygon PositivePoly) <$> facetVertices <$> facets)
-           (Skeleton $ concatMap facetEdges facets))
+           ((Polygon PositivePoly) <$> polygonVertices <$> polygons)
+           (Skeleton $ concatMap polygonEdges polygons))
 
 toSolution :: Paper -> Solution.Solution
 toSolution = undefined
@@ -81,10 +74,11 @@ toSolution = undefined
 
 -- some possible example cases
 sampleMiniPaper :: Paper
-sampleMiniPaper = Paper sampleFacets where
-  sampleFacets =
+sampleMiniPaper = Paper samplePolygons where
+  samplePolygons =
     [
-      Facet
+      Polygon
+      PositivePoly
         [
           (Point 0 0),
           (Point 0 (Coord (1 % 2))),
