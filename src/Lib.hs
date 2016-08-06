@@ -26,8 +26,12 @@ unfolds = fmap Paper.toProblem . Paper.unfolds . Paper.fromProblem
 
 
 unfoldsToLevel :: Int -> Problem -> [Problem]
-unfoldsToLevel level = fmap (Paper.toProblem . head) . concat . take (level + 1) . T.levels. Solver.exploreUnfolds . Paper.fromProblem
+unfoldsToLevel level = fmap (Paper.toProblem . head) . concat . take (level + 1) . unfoldLevels
 
 
 historyOfUnfolding :: Int -> Problem -> [Problem]
-historyOfUnfolding idx = fmap (Paper.toProblem) . reverse . (!! idx) . concat . T.levels. Solver.exploreUnfolds . Paper.fromProblem
+historyOfUnfolding idx = fmap (Paper.toProblem) . reverse . (!! idx) . concat . unfoldLevels
+
+
+unfoldLevels :: Problem -> [[[Paper.Paper]]]
+unfoldLevels = T.levels . Solver.exploreUnfolds . Paper.fromProblem
