@@ -31,7 +31,7 @@ mirrorMatrix (Edge p p') = scaleMatrix normaliser transform where
   Point (Coord x') (Coord y') = p'
   dx = x - x'
   dy = y - y'
-  normaliser = 1 / ((x' - x)^2 + (y' - y)^2)
+  normaliser = 1 / (dx^2 + dy^2)
   transform = fromLists [ [dx^2 - dy^2, 2 * dx * dy], [2 * dx * dy, dy^2 - dx^2] ]
 
 -- This could overcount, but hey
