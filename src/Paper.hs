@@ -1,6 +1,7 @@
 module Paper where
 
 import           Data.List    ((\\), nub)
+import           Data.Ratio   ((%))
 import           GraphTypes
 import           Manipulation
 import           Problem
@@ -63,14 +64,32 @@ mirrorFacet edge facet = (Facet mirrored) where
 -- The joys of conversion
 
 fromProblem :: Problem -> Paper
-fromProblem = undefined
+fromProblem (Problem silhouette) = Paper facets where
+  Silhouette polys skeleton = silhouette
+  facets = map (\(Polygon _ points) -> (Facet points)) polys
 
 toProblem :: Paper -> Problem
-toProblem = undefined
+toProblem (Paper facets) = Problem silhouette where
+  silhouette = Silhouette polys skeleton
+  skeleton   = Skeleton $ concatMap edgesAboutFacet facets
+  polys      = [(Polygon PositivePoly points) | points <- map (\(Facet points) -> points) facets]
 
 toSolution :: Paper -> Solution.Solution
 toSolution = undefined
 
+
+-- some possible example cases
+sampleMiniPaper :: Paper
+sampleMiniPaper = Paper sampleFacets where
+  sampleFacets =
+    [
+      Facet
+        [
+          (Point 0 0),
+          (Point 0 (Coord (1 % 2))),
+          (Point 1 1)
+        ]
+    ]
 
 -- We'd want to exclude holes here, but computational geometry is hard
 facetiseProblem :: Problem -> [Facet]
