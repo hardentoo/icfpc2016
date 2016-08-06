@@ -55,7 +55,7 @@ window.addEventListener("DOMContentLoaded", function() {
   }
 
   const onNext = function() {
-    if(window.currentProblem < window.problemSet.length) {
+    if(window.currentProblem < window.problemSet.problems.length-1) {
       window.currentProblem++;
       renderUI();
     }
@@ -68,6 +68,7 @@ window.addEventListener("DOMContentLoaded", function() {
   }
 
   const onKeyDown = function(event) {
+    console.log("event.key", event.key);
     if(event.key == "ArrowLeft" || event.key == "ArrowUp") { onPrev(); }
     else if(event.key == "ArrowRight" || event.key == "ArrowDown") { onNext(); }
   }
@@ -96,7 +97,6 @@ class Problem {
 
 class ProblemSet {
   constructor(pbs, cx0, cy0, cx1, cy1) {
-    console.log("new ProblemSet(): ", pbs, cx0, cy0, cx1, cy1);
     this.problems = pbs;
     this.x0 = cx0;
     this.y0 = cy0;
@@ -119,14 +119,6 @@ class Renderer {
 
     let scaleX = 1 / (set.x1 - set.x0);
     let scaleY = 1 / (set.y1 - set.y0);
-
-    console.log("scaleX:", scaleX);
-    console.log("scaleY:", scaleY);
-    console.log("x0:", set.x0);
-    console.log("y0:", set.y0);
-    console.log("x1:", set.x1);
-    console.log("y1:", set.y1);
-    console.log("set:", set);
 
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     for(let polygon of problem.polygons) {
@@ -195,7 +187,6 @@ class Parser {
 
       const numberOfPolygons = lines.shift();
 
-      console.log("numberOfPolygons:", numberOfPolygons);
       
       for(let i = 0; i < numberOfPolygons; i++) {
         polygons.push(Parser.parsePolygon(lines));
@@ -216,7 +207,6 @@ class Parser {
 
   static parsePolygon(lines) {
     const numberOfPoints = lines.shift();
-    console.log("numberOfPoints:", numberOfPoints);
     let points = [];
     for(let i = 0; i < numberOfPoints; i++) {
       points.push(Parser.parsePoint(lines.shift()));
@@ -226,7 +216,6 @@ class Parser {
 
   static parseBones(lines) {
     const numberOfBones = lines.shift();
-    console.log("numberOfBones:", numberOfBones);
     let bones = [];
     for(let i = 0; i < numberOfBones; i++) {
       bones.push(Parser.parseBone(lines.shift()));
@@ -236,7 +225,6 @@ class Parser {
 
   static parseBone(input) {
     let components = input.split(" ");
-    console.log("components:", components);
     return {
       p0: Parser.parsePoint(components[0]),
       p1: Parser.parsePoint(components[1])
