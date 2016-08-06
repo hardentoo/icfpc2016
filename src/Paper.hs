@@ -21,7 +21,7 @@ facetsAlongEdge (Paper facets) edge = filter adjacent facets where
   adjacent facet = edge `elem` (edgesAboutFacet facet)
 
 unfoldFacetsAlongEdge :: Paper -> Edge -> [Facet] -> [Paper]
-unfoldFacetsAlongEdge (Paper vertices) edge facets = [moved, retained] where
+unfoldFacetsAlongEdge (Paper vertices) edge facets = filter isConsistent [moved, retained] where
   moved    = Paper (mirrored ++ (vertices \\ facets))
   retained = Paper (mirrored ++ vertices)
   mirrored = map (mirrorFacet edge) facets
@@ -50,6 +50,10 @@ isFolded (Paper facets) = union /= 1 where
   vertices = map (\(Facet vertices) -> vertices) facets
   union = areaSum vertices
 
+isConsistent  :: Paper -> Bool
+isConsistent (Paper facets) = union <= 1 where
+  vertices = map (\(Facet vertices) -> vertices) facets
+  union = areaSum vertices
 
 mirrorFacet :: Edge -> Facet -> Facet
 mirrorFacet edge facet = (Facet mirrored) where
