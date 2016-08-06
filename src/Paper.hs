@@ -87,13 +87,7 @@ sampleMiniPaper = Paper sampleFacets where
         ]
     ]
 
--- We'd want to exclude holes here, but computational geometry is hard
-facetiseProblem :: Problem -> [Facet]
-facetiseProblem (Problem s) = facetiseSilhouette s where
-  facetiseSilhouette (Silhouette basePolys skeleton) = concatMap (facetisePolygon skeleton) basePolys
-
-facetisePolygon :: Skeleton -> Polygon -> [Facet]
-facetisePolygon (Skeleton edges) (Polygon polyType vertices) = case polyType of
-  NegativePoly -> error "Handling empty spaces is probably a horrible rabbithole"
-  PositivePoly ->
-    error "Still can't do anything really"
+-- -- We'd want to exclude holes here, but computational geometry is hard
+-- facetiseProblem :: Problem -> [Facet]
+-- facetiseProblem (Problem (Silhouette basePolys skeleton)) =
+--   _groupIntoFacets (skelEdges skeleton)
