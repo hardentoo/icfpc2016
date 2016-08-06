@@ -29,8 +29,10 @@ mirrorMatrix :: Edge -> Matrix Rational
 mirrorMatrix (Edge p p') = scaleMatrix normaliser transform where
   Point (Coord x) (Coord y)   = p
   Point (Coord x') (Coord y') = p'
+  dx = x - x'
+  dy = y - y'
   normaliser = 1 / ((x' - x)^2 + (y' - y)^2)
-  transform = fromLists [ [x^2 - y^2, 2 * x * y], [2 * x * y, y^2 - x^2] ]
+  transform = fromLists [ [dx^2 - dy^2, 2 * dx * dy], [2 * dx * dy, dy^2 - dx^2] ]
 
 -- This could overcount, but hey
 areaSum :: [[Point]] -> Rational
