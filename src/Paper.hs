@@ -36,7 +36,7 @@ unfoldableEdges = nub . concatMap facetEdges . paperFacets
 unfoldsAlongEdge :: Paper -> Edge -> [Paper]
 unfoldsAlongEdge paper edge = concatMap (unfoldFacetsAlongEdge paper edge) facetSets
   where
-    facetSets = powerset $ facetsAlongEdge paper edge
+    facetSets = filter (not . null) . powerset $ facetsAlongEdge paper edge
 
 powerset :: [a] -> [[a]]
 powerset [] = [[]]
