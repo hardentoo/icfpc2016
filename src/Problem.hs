@@ -44,14 +44,14 @@ parsePolygon = do
   let polyType = if pointsAreClockwise points then NegativePoly else PositivePoly
   pure $ Polygon polyType points
 
-parseCoord :: Parser Coord
-parseCoord = do
+parseUnit :: Parser Unit
+parseUnit = do
   numerator <- parseInt
   denominator <- try (char '/' *> parseNat) <|> pure 1
-  pure $ Coord (numerator % denominator)
+  pure $ Unit (numerator % denominator)
 
 parsePoint :: Parser Point
-parsePoint = Point <$> (parseCoord <* char ',') <*> parseCoord
+parsePoint = Point <$> (parseUnit <* char ',') <*> parseUnit
 
 parseEdge :: Parser Edge
 parseEdge = Edge <$> (parsePoint <* space) <*> parsePoint <* newline

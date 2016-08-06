@@ -35,9 +35,9 @@ instance Show Solution where
 
 exampleSolution = Solution
   [ Facet
-    [ Vertex (Point (Coord 0) (Coord 1)) (Point (Coord 1) (Coord 1))
-    , Vertex (Point (Coord 1) (Coord 1)) (Point (Coord 1) (Coord 0))
-    , Vertex (Point (Coord 1) (Coord 0)) (Point (Coord 0) (Coord 0))
-    , Vertex (Point (Coord 0) (Coord 0)) (Point (Coord 0) (Coord 1))
+    [ Vertex (Point (Unit 0) (Unit 1)) (Point (Unit 1) (Unit 1))
+    , Vertex (Point (Unit 1) (Unit 1)) (Point (Unit 1) (Unit 0))
+    , Vertex (Point (Unit 1) (Unit 0)) (Point (Unit 0) (Unit 0))
+    , Vertex (Point (Unit 0) (Unit 0)) (Point (Unit 0) (Unit 1))
     ]
   ]

@@ -81,7 +81,7 @@ sampleMiniPaper = Paper samplePolygons where
       PositivePoly
         [
           (Point 0 0),
-          (Point 0 (Coord (1 % 2))),
+          (Point 0 (Unit (1 % 2))),
           (Point 1 1)
         ]
     ]

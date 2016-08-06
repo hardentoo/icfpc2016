@@ -3,7 +3,7 @@ module GraphTypes
   (
     Edge(..)
   , squaredEdgeLength
-  , Coord(..)
+  , Unit(..)
   , Point(..)
   , pointsAreClockwise
   , PolygonType(..)
@@ -22,18 +22,18 @@ data Edge  = Edge { start :: Point
 instance Eq Edge where
   Edge a b == Edge a' b' = (a, b) == (a', b') || (a, b) == (b', a')
 
-squaredEdgeLength :: Edge -> Coord
+squaredEdgeLength :: Num a => Edge -> Rational
 squaredEdgeLength e = squaredDistanceBetween (start e) (end e)
 
-newtype Coord = Coord { coordVal :: Rational }
+newtype Unit = Unit { unitVal :: Rational }
   deriving (Eq, Num, Ord)
 
-data Point = Point { pointX :: Coord
-                   , pointY :: Coord }
+data Point = Point { pointX :: Unit
+                   , pointY :: Unit }
   deriving (Eq, Ord)
 
-squaredDistanceBetween :: Point -> Point -> Coord
-squaredDistanceBetween p1 p2 = sq (pointX p2 - pointX p1) + sq (pointY p2 - pointY p1)
+squaredDistanceBetween :: Point -> Point -> Rational
+squaredDistanceBetween p1 p2 = unitVal $ sq (pointX p2 - pointX p1) + sq (pointY p2 - pointY p1)
 
 sq :: Num a => a -> a
 sq a = a * a
@@ -57,7 +57,7 @@ pointsAreClockwise :: [Point] -> Bool
 pointsAreClockwise [] = True
 pointsAreClockwise xs@(x:rest) = 0 < sum (uncurry crossProduct <$> zip xs (rest ++ [x]))
   -- shoelace https://en.wikipedia.org/wiki/Shoelace_formula
-  where crossProduct (Point (Coord x) (Coord y)) (Point (Coord x') (Coord y')) = (x' - x) * (y + y')
+  where crossProduct (Point (Unit x) (Unit y)) (Point (Unit x') (Unit y')) = (x' - x) * (y + y')
 
 
 instance Show Polygon where
@@ -71,8 +71,8 @@ instance Show Polygon where
 instance Show Edge where
   show (Edge start end) = show start ++ " " ++ show end
 
-instance Show Coord where
-  show (Coord amount) = show (numerator amount) ++
+instance Show Unit where
+  show (Unit amount) = show (numerator amount) ++
     if 1 /= denominator amount then "/" ++ show (denominator amount) else ""
 
 instance Show Point where
