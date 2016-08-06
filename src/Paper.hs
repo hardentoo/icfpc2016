@@ -1,6 +1,6 @@
 module Paper where
 
-import           Data.List    (nub, (\\))
+import           Data.List    (nub, union, (\\))
 import           Data.Ratio   ((%))
 import           GraphTypes
 import           Manipulation
@@ -9,6 +9,11 @@ import qualified Solution
 
 data Paper = Paper { paperFacets :: [Facet] }
   deriving Show
+
+instance Eq Paper where
+  p1 == p2 = null $ ldiff `union` rdiff where
+    ldiff = (paperFacets p1) \\ (paperFacets p2)
+    rdiff = (paperFacets p2) \\ (paperFacets p1)
 
 data Facet = Facet { facetVertices :: [Point] }
   deriving (Eq, Show)
@@ -44,7 +49,7 @@ powerset (x:xs) = powerset xs ++ map (x:) (powerset xs)
 
 unfolds :: Paper -> [Paper]
 unfolds paper
-  | isFolded paper = concatMap (unfoldsAlongEdge paper) $ unfoldableEdges paper
+  | isFolded paper = nub $ concatMap (unfoldsAlongEdge paper) $ unfoldableEdges paper
   | otherwise = []
 
 unionArea :: Paper -> Rational
