@@ -12,8 +12,9 @@ module GraphTypes
   )
 where
 
-import           Data.List  (intersect, nub, union)
-import           Data.Ratio (denominator, numerator, (%))
+import           Data.Function (on)
+import           Data.List     (intersect, nub, union, sort)
+import           Data.Ratio    (denominator, numerator, (%))
 
 
 data Edge  = Edge { start :: Point
@@ -21,6 +22,9 @@ data Edge  = Edge { start :: Point
 
 instance Eq Edge where
   Edge a b == Edge a' b' = (a, b) == (a', b') || (a, b) == (b', a')
+
+instance Ord Edge where
+  compare (Edge a b) (Edge a' b') = (compare `on` sort) [a, b] [a', b']
 
 edgesMeet :: Edge -> Edge -> Bool
 edgesMeet (Edge a b) (Edge a' b') = not (null (intersect [a, b] [a', b']))
