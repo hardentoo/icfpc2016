@@ -1,3 +1,4 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module GraphTypes
   (
     Edge(..)
@@ -6,19 +7,21 @@ module GraphTypes
   )
 where
 
-import           Data.Ratio         (denominator, numerator, (%))
+import           Data.Ratio (denominator, numerator, (%))
 
 
 data Edge  = Edge { start :: Point
-                  , end :: Point }
+                  , end   :: Point }
   deriving Eq
 
-data Coord = Coord Rational
-  deriving Eq
+
+newtype Coord = Coord { coordVal :: Rational }
+  deriving (Eq, Num, Ord)
 
 data Point = Point { pointX :: Coord
                    , pointY :: Coord }
-  deriving Eq
+  deriving (Eq, Ord)
+
 
 instance Show Edge where
   show (Edge start end) = show start ++ " " ++ show end

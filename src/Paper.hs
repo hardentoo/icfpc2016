@@ -1,10 +1,10 @@
 module Paper where
 
-import Problem
-import Solution
-import GraphTypes
-import Manipulation
-import Data.List (nub, delete)
+import           Data.List    (delete, nub)
+import           GraphTypes
+import           Manipulation
+import           Problem
+import qualified Solution
 
 data Paper = Paper { facets :: [Facet] }
 
@@ -56,5 +56,5 @@ fromProblem = undefined
 toProblem :: Paper -> Problem
 toProblem = undefined
 
-toSolution :: Paper -> Solution
+toSolution :: Paper -> Solution.Solution
 toSolution = undefined
