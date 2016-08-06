@@ -13,14 +13,12 @@ data Paper = Paper { paperFacets :: [Facet] }
 data Facet = Facet { facetVertices :: [Point] }
   deriving (Eq, Show)
 
-edgesAboutFacet :: Facet -> [Edge]
-edgesAboutFacet (Facet vertices) = map (uncurry Edge) pairs
-  where
-    pairs = zip vertices (tail $ cycle vertices)
+
+facetEdges :: Facet -> [Edge]
+facetEdges (Facet vertices) = (uncurry Edge) <$> zip vertices (tail $ cycle vertices)
 
 facetsAlongEdge :: Paper -> Edge -> [Facet]
-facetsAlongEdge (Paper facets) edge = filter adjacent facets where
-  adjacent facet = edge `elem` (edgesAboutFacet facet)
+facetsAlongEdge (Paper facets) edge = filter (elem edge . facetEdges) facets
 
 unfoldFacetsAlongEdge :: Paper -> Edge -> [Facet] -> [Paper]
 unfoldFacetsAlongEdge paper edge facets = filter isConsistent [moved, retained] where
@@ -32,13 +30,13 @@ unfoldFacetsAlongEdge paper edge facets = filter isConsistent [moved, retained] 
 -- Are we missing some filter here? The restriction is implicitly in "the
 -- unfolded result is inconsistent"...
 unfoldableEdges :: Paper -> [Edge]
-unfoldableEdges = nub . concatMap edgesAboutFacet . paperFacets
+unfoldableEdges = nub . concatMap facetEdges . paperFacets
 
 -- This actually isn't all of the possibilities...
 unfoldsAlongEdge :: Paper -> Edge -> [Paper]
-unfoldsAlongEdge paper edge = concatMap (unfoldFacetsAlongEdge paper edge) facetSets where
-  facets    = facetsAlongEdge paper edge
-  facetSets = powerset facets
+unfoldsAlongEdge paper edge = concatMap (unfoldFacetsAlongEdge paper edge) facetSets
+  where
+    facetSets = powerset $ facetsAlongEdge paper edge
 
 powerset :: [a] -> [[a]]
 powerset [] = [[]]
@@ -55,7 +53,7 @@ unionArea = areaSum . (fmap facetVertices) . paperFacets
 isFolded :: Paper -> Bool
 isFolded = (1 /=) . unionArea
 
-isConsistent  :: Paper -> Bool
+isConsistent :: Paper -> Bool
 isConsistent = (1 >=) . unionArea
 
 mirrorFacet :: Edge -> Facet -> Facet
@@ -70,7 +68,7 @@ toProblem :: Paper -> Problem
 toProblem (Paper facets) =
   Problem (Silhouette
            ((Polygon PositivePoly) <$> facetVertices <$> facets)
-           (Skeleton $ concatMap edgesAboutFacet facets))
+           (Skeleton $ concatMap facetEdges facets))
 
 toSolution :: Paper -> Solution.Solution
 toSolution = undefined
