@@ -13,7 +13,9 @@ import           Data.Ratio (denominator, numerator, (%))
 
 data Edge  = Edge { start :: Point
                   , end   :: Point }
-  deriving Eq
+
+instance Eq Edge where
+  Edge a b == Edge a' b' = (a, b) == (a', b') || (a, b) == (b', a')
 
 squaredEdgeLength :: Edge -> Coord
 squaredEdgeLength e = squaredDistanceBetween (start e) (end e)
