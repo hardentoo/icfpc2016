@@ -1,4 +1,4 @@
-
+const MAX_NUMBER = 1e30;
 
 window.addEventListener("DOMContentLoaded", function() {
   const textarea        = document.querySelector("textarea");
@@ -28,7 +28,7 @@ window.addEventListener("DOMContentLoaded", function() {
       canvas.classList.add("preview-canvas");
       canvas.width  = "100";
       canvas.height = "100";
-      // can
+
       canvas.setAttribute("data-problem-index", i);
       canvas.addEventListener("click", onPreview);
 
@@ -68,7 +68,6 @@ window.addEventListener("DOMContentLoaded", function() {
   }
 
   const onKeyDown = function(event) {
-    console.log("event.key", event.key);
     if(event.key == "ArrowLeft" || event.key == "ArrowUp") { onPrev(); }
     else if(event.key == "ArrowRight" || event.key == "ArrowDown") { onNext(); }
   }
@@ -80,6 +79,12 @@ window.addEventListener("DOMContentLoaded", function() {
   window.addEventListener("keydown", onKeyDown);
   onParse();
 });
+
+class Oversized {
+  constructor(n) {
+    this.numberThatWasToLarge = n;
+  }
+}
 
 class Polygon {
   constructor(pt) {
@@ -187,9 +192,11 @@ class Parser {
 
       const numberOfPolygons = lines.shift();
 
-      
-      for(let i = 0; i < numberOfPolygons; i++) {
-        polygons.push(Parser.parsePolygon(lines));
+      try {
+        for(let i = 0; i < numberOfPolygons; i++) {
+          polygons.push(Parser.parsePolygon(lines));
+        }
+      } catch(e) {
       }
 
       let bones = Parser.parseBones(lines);
@@ -198,9 +205,9 @@ class Parser {
     }
 
     return new ProblemSet(problems,
-      nestedBest(problems, 1e+1000000,  "x", (a, b) => a < b),
-      nestedBest(problems, 1e+10000,  "y", (a, b) => a < b),
-      nestedBest(problems, 1e-10000000, "x", (a, b) => a > b),
+      nestedBest(problems, 1e+10000, "x", (a, b) => a < b),
+      nestedBest(problems, 1e+10000, "y", (a, b) => a < b),
+      nestedBest(problems, 1e-10000, "x", (a, b) => a > b),
       nestedBest(problems, 1e-10000, "y", (a, b) => a > b)
     );
   }
@@ -234,18 +241,33 @@ class Parser {
   static parsePoint(input) {
     let components = input.split(",");
 
-    return { 
-      x: Parser.parseCoordinate(components[0]),
-      y: Parser.parseCoordinate(components[1])
-    };
+    try {
+      return { 
+        x: Parser.parseCoordinate(components[0]),
+        y: Parser.parseCoordinate(components[1])
+      };
+    } catch(ex) {
+      console.log("ex: ", ex);
+      return {
+        x: 0,
+        y: 0
+      };
+    }
   }
 
   static parseCoordinate(input) {
     let components = input.split("/");
+
+    let a = Number.parseInt(components[0]);
+
+    if(a > MAX_NUMBER) { throw new Oversized(a) }
+
     if(components.length == 1) {
-      return Number.parseInt(components[0]);
+      return a;
     } else {
-      return Number.parseInt(components[0]) / Number.parseInt(components[1]);
+      let b = Number.parseInt(components[1]);
+      if(b > MAX_NUMBER) { throw new Oversized(b); }
+      return a / b;
     }
   }
 }

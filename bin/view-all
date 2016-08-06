@@ -8,6 +8,6 @@ range () {
     done
 }
 
-for f in $(range 1 3; range 5 101); do
+for f in $(range 1 102); do
     cat "$THISDIR/../problems/problem_$f"
 done | "$THISDIR/viewer"
