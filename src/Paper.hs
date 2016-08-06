@@ -45,7 +45,9 @@ powerset [] = [[]]
 powerset (x:xs) = powerset xs ++ map (x:) (powerset xs)
 
 unfolds :: Paper -> [Paper]
-unfolds paper = concatMap (unfoldsAlongEdge paper) $ unfoldableEdges paper
+unfolds paper
+  | isFolded paper = concatMap (unfoldsAlongEdge paper) $ unfoldableEdges paper
+  | otherwise = []
 
 unionArea :: Paper -> Rational
 unionArea = areaSum . (fmap facetVertices) . paperFacets
