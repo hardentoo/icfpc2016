@@ -81,15 +81,16 @@ window.addEventListener("DOMContentLoaded", function() {
 });
 
 class Polygon {
-  constructor(pt, bn) {
+  constructor(pt) {
     this.points = pt;
-    this.bones  = bn;
+    
   }
 }
 
 class Problem { 
-  constructor(pg) {
+  constructor(pg, bn) {
     this.polygons = pg;
+    this.bones  = bn;
   }
 }
 
@@ -148,27 +149,26 @@ class Renderer {
       this.context.fill();
 
       this.context.beginPath();
+    }
 
+    for(let bone of problem.bones) {
+      this.context.moveTo(left + ((bone.p0.x - set.x0) * width * scaleX), top + (height - ((bone.p0.y - set.y0) * height * scaleY)));
+      this.context.lineTo(left + ((bone.p1.x - set.x0) * width * scaleX), top + (height - ((bone.p1.y - set.y0) * height * scaleY)));
+    }
 
-      for(let bone of polygon.bones) {
-        this.context.moveTo(left + ((bone.p0.x - set.x0) * width * scaleX), top + (height - ((bone.p0.y - set.y0) * height * scaleY)));
-        this.context.lineTo(left + ((bone.p1.x - set.x0) * width * scaleX), top + (height - ((bone.p1.y - set.y0) * height * scaleY)));
-      }
+    this.context.strokeStyle = "rgb(0, 0, 0)";
+    this.context.lineWidth = 2;
 
-      this.context.strokeStyle = "rgb(0, 0, 0)";
-      this.context.lineWidth = 2;
+    this.context.stroke();
 
-      this.context.stroke();
+    this.context.fillStyle = "rgb(0, 0, 0)";
+    this.context.font = "14px sans-serif";
 
-      this.context.fillStyle = "rgb(0, 0, 0)";
-      this.context.font = "14px sans-serif";
-
-      if(renderLabels) {
-        this.context.fillText(set.x0.toString().slice(0, 5), left + 4, top + height + 16, 20);
-        this.context.fillText(set.x1.toString().slice(0, 5), left + width, top + height + 16, 20);
-        this.context.fillText(set.y0.toString().slice(0, 5), left - 25, top + height, 20);
-        this.context.fillText(set.y1.toString().slice(0, 5), left - 25, top + 12, 20);
-      }
+    if(renderLabels) {
+      this.context.fillText(set.x0.toString().slice(0, 5), left + 4, top + height + 16, 20);
+      this.context.fillText(set.x1.toString().slice(0, 5), left + width, top + height + 16, 20);
+      this.context.fillText(set.y0.toString().slice(0, 5), left - 25, top + height, 20);
+      this.context.fillText(set.y1.toString().slice(0, 5), left - 25, top + 12, 20);
     }
   }
 }
@@ -194,12 +194,16 @@ class Parser {
       let polygons = [];
 
       const numberOfPolygons = lines.shift();
+
+      console.log("numberOfPolygons:", numberOfPolygons);
       
       for(let i = 0; i < numberOfPolygons; i++) {
         polygons.push(Parser.parsePolygon(lines));
       }
 
-      problems.push(new Problem(polygons));
+      let bones = Parser.parseBones(lines);
+
+      problems.push(new Problem(polygons, bones));
     }
 
     return new ProblemSet(problems,
@@ -212,22 +216,27 @@ class Parser {
 
   static parsePolygon(lines) {
     const numberOfPoints = lines.shift();
+    console.log("numberOfPoints:", numberOfPoints);
     let points = [];
     for(let i = 0; i < numberOfPoints; i++) {
       points.push(Parser.parsePoint(lines.shift()));
     }
+    return new Polygon(points);
+  }
 
+  static parseBones(lines) {
     const numberOfBones = lines.shift();
+    console.log("numberOfBones:", numberOfBones);
     let bones = [];
     for(let i = 0; i < numberOfBones; i++) {
       bones.push(Parser.parseBone(lines.shift()));
     }
-
-    return new Polygon(points, bones);
+    return bones;
   }
 
   static parseBone(input) {
     let components = input.split(" ");
+    console.log("components:", components);
     return {
       p0: Parser.parsePoint(components[0]),
       p1: Parser.parsePoint(components[1])
