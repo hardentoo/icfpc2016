@@ -50,8 +50,20 @@ unionArea = areaSum . (fmap polygonVertices) . paperPolygons
 isFolded :: Paper -> Bool
 isFolded = (1 /=) . unionArea
 
+isOversize :: Paper -> Bool
+isOversize = (1 <) . unionArea
+
+fitsInBounds :: Paper -> Bool
+fitsInBounds paper = (maxX - minX) <= 1 && (maxY - minY) <= 1 where
+  vertices = concat . (map polygonVertices) . paperPolygons $ paper
+  xPoints  = map pointX vertices
+  yPoints  = map pointY vertices
+  (minX, maxX) = (minimum xPoints, maximum xPoints)
+  (minY, maxY) = (minimum yPoints, maximum yPoints)
+
 isConsistent :: Paper -> Bool
-isConsistent = (1 >=) . unionArea
+isConsistent paper = and [ predicate paper | predicate <- predicates ] where
+  predicates = [isOversize, fitsInBounds]
 
 mirrorPolygon :: Edge -> Polygon -> Polygon
 mirrorPolygon edge = Polygon PositivePoly . mirrorPoints edge . polygonVertices
