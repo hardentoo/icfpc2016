@@ -25,13 +25,15 @@ import qualified Data.Tree           as T
 
 data Edge  = Edge { start :: Point
                   , end   :: Point }
-           deriving Show
 
 instance Eq Edge where
   Edge a b == Edge a' b' = (a, b) == (a', b') || (a, b) == (b', a')
 
 instance Ord Edge where
   compare (Edge a b) (Edge a' b') = (compare `on` sort) [a, b] [a', b']
+
+instance Show Edge where
+  show (Edge x y) = "Edge (" ++ show x ++ " => " ++ show y ++ ")"
 
 edgesMeet :: Edge -> Edge -> Bool
 edgesMeet (Edge a b) (Edge a' b') = not (null (intersect [a, b] [a', b']))
@@ -40,11 +42,18 @@ squaredEdgeLength :: Num a => Edge -> Rational
 squaredEdgeLength e = squaredDistanceBetween (start e) (end e)
 
 newtype Unit = Unit { unitVal :: Rational }
-  deriving (Eq, Num, Ord, Show)
+  deriving (Eq, Num, Ord)
+
+instance Show Unit where
+  show (Unit v) = show (numerator v) ++
+    (if 1 == (denominator v) then "" else "/" ++ show (denominator v))
 
 data Point = Point { pointX :: Unit
                    , pointY :: Unit }
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord)
+
+instance Show Point where
+  show (Point x y) = "Point (" ++ show x ++ "," ++ show y ++ ")"
 
 squaredDistanceBetween :: Point -> Point -> Rational
 squaredDistanceBetween p1 p2 = unitVal $ sq (pointX p2 - pointX p1) + sq (pointY p2 - pointY p1)
