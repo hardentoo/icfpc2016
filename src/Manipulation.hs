@@ -55,6 +55,38 @@ polygonSize points = (sum . map unsignedSize) matrices where
   unsignedSize matrix = abs $ 1 % 2 * (detLU matrix)
   pairs    = [[x,y] | (x,y) <- zip points (tail $ cycle points)]
 
+{- Fetch the (approximate) convex hull, using that to find the corner points
+Having constructed those, evaluate the matrix that transforms the resulting
+square down to the origin space...
+  ## origin * alignmentMatrix = hull
+  => alignmentMatrix = inv(origin) * hull
+The space is dramatically overdetermined – select perpendicular vectors (well,
+if we're lucky – more work here ideally)
+-}
+alignmentMatrix :: Polygon -> Matrix Rational
+alignmentMatrix origin = originBase * (hullMat origin) where
+  originBase = fromLists [[0,1], [1,0]]
+  hullMat    = pointsToMatrix . transformPoints . polygonVertices
+
+originMatrix :: Matrix Rational
+originMatrix = fromLists [[0,1], [1,1], [1,0], [0,0]]
+
+transformPoints :: [Point] -> [Point]
+transformPoints = (\(a:_:b:_) -> [a,b]) . clampedConvexHull
+
+clampedConvexHull :: [Point] -> [Point]
+clampedConvexHull points = [ closestIn hullPoint points | hullPoint <- ahull ] where
+  ahull = (approxConvexHull points) :: [Point]
+
+closestIn :: Point -> [Point] -> Point
+closestIn target original = minimumBy (comparator target) original where
+  comparator target = comparing (distanceSq target)
+  distanceSq p1 p2 = dx^2 + dy^2 where
+    [x , y ] = destructure p1 :: [Rational]
+    [x', y'] = destructure p2 :: [Rational]
+    dx = x - x' :: Rational
+    dy = y - y' :: Rational
+
 
 -------------------
 
