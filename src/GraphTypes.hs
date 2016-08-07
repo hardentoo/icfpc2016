@@ -1,7 +1,9 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TupleSections              #-}
 module GraphTypes
   (
     Edge(..)
+  , edgesMeet
   , squaredEdgeLength
   , Unit(..)
   , Point(..)
@@ -9,13 +11,17 @@ module GraphTypes
   , PolygonType(..)
   , Polygon(..)
   , polygonEdges
+  , edgesToPolygons
   )
 where
 
-import           Data.Function (on)
-import           Data.List     (intersect, nub, union, sort)
-import           Data.Ratio    (denominator, numerator, (%))
-
+import           Control.Applicative (empty)
+import           Data.Function       (on)
+import           Data.List           (delete, intersect, nub, sort, union)
+import           Data.Maybe          (catMaybes, fromJust)
+import           Data.Ratio          (denominator, numerator, (%))
+import           Data.Tree           (Tree)
+import qualified Data.Tree           as T
 
 data Edge  = Edge { start :: Point
                   , end   :: Point }
@@ -59,6 +65,48 @@ instance Eq Polygon where
     where
       e1 = polygonEdges p1
       e2 = polygonEdges p2
+
+edgesToPolygons :: PolygonType -> [Edge] -> [Polygon]
+edgesToPolygons ptype edges = nub $ (Polygon ptype . init . edgesToPoints) <$> edgeLoops edges
+
+edgesToPoints :: [Edge] -> [Point]
+edgesToPoints [] = []
+edgesToPoints [(Edge a b)] = [a, b]
+edgesToPoints ((Edge a b):e2:es) =
+  case joinEdge b e2 of
+    Just p -> [a, b, p] ++ joins p es
+    Nothing -> case joinEdge a e2 of
+                 Just p -> [b, a, p] ++ joins p es
+  where
+    joins :: Point -> [Edge] -> [Point]
+    joins _ [] = []
+    joins p (e:es) = nxt : joins nxt es
+      where nxt = fromJust (joinEdge p e)
+
+joinEdge :: Point -> Edge -> Maybe Point
+joinEdge p (Edge a b) | p == a = Just b
+joinEdge p (Edge a b) | p == b = Just a
+joinEdge _ _ = Nothing
+
+edgeLoops :: [Edge] -> [[Edge]]
+edgeLoops edges = catMaybes $ concatMap T.flatten $ T.unfoldForest edgeGroupings [([e], delete e edges) | e <- edges ]
+
+edgesFormLoop :: [Edge] -> Bool
+edgesFormLoop (e:_:es@(_:_)) = edgesMeet e (last es)
+edgesFormLoop _ = False
+
+edgeGroupings :: ([Edge], [Edge]) -> (Maybe [Edge], [([Edge], [Edge])])
+edgeGroupings (sofar, nexts) =
+  if edgesFormLoop sofar then (Just sofar, [])
+  else (Nothing,) $ do
+    next <- nexts
+    let remaining = delete next nexts
+    if next `edgesMeet` (head sofar)
+    then return (next:sofar, remaining)
+    else if next `edgesMeet` (last sofar)
+    then return (sofar ++ [next], remaining)
+    else empty
+
 
 pointsAreClockwise :: [Point] -> Bool
 pointsAreClockwise [] = True

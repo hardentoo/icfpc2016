@@ -9,7 +9,7 @@ import qualified Solution
 
 data Paper = Paper
   {
-    paperPolygons :: [Polygon]
+    paperPolygons  :: [Polygon]
   , paperMovements :: [(Point, Point)]
   }
   deriving Show
@@ -73,8 +73,7 @@ isConsistent paper = and [ predicate paper | predicate <- predicates ] where
 -- The joys of conversion
 
 fromProblem :: Problem -> Paper
-fromProblem problem = Paper polygons [] where
-  polygons = (map (Polygon PositivePoly . polygonVertices) . silPoly . probSilhouette) problem
+fromProblem = (flip Paper []) . edgesToPolygons PositivePoly . skelEdges . silSkel . probSilhouette
 
 toProblem :: Paper -> Problem
 toProblem paper =
@@ -85,7 +84,6 @@ toProblem paper =
 
 toSolution :: Paper -> Solution.Solution
 toSolution = undefined
-
 
 -- some possible example cases
 sampleMiniPaper :: Paper
@@ -100,8 +98,3 @@ sampleMiniPaper = Paper samplePolygons [] where
           (Point 1 1)
         ]
     ]
-
--- -- We'd want to exclude holes here, but computational geometry is hard
--- facetiseProblem :: Problem -> [Facet]
--- facetiseProblem (Problem (Silhouette basePolys skeleton)) =
---   _groupIntoFacets (skelEdges skeleton)
