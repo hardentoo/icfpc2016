@@ -9,6 +9,10 @@ where
 import           Data.Matrix
 import           Data.Ratio  ((%))
 import           GraphTypes
+import           Data.List (sortBy, minimumBy)
+import           Data.Function (on)
+import           Data.Ord (comparing)
+
 
 pointsToMatrix :: [Point] -> Matrix Rational
 pointsToMatrix points = fromLists (map destructure points)
@@ -50,3 +54,47 @@ polygonSize points = (sum . map unsignedSize) matrices where
   matrices = map pointsToMatrix pairs
   unsignedSize matrix = abs $ 1 % 2 * (detLU matrix)
   pairs    = [[x,y] | (x,y) <- zip points (tail $ cycle points)]
+
+
+-------------------
+
+approxConvexHull :: [Point] -> [Point]
+approxConvexHull points
+    | length points >= 3 = scan [pt0] rests
+    | otherwise       = points
+    where
+        -- Find the most bottom-left point pt0
+        pt0 = foldr bottomLeft (Point (Unit (2^128)) (Unit (2^128))) points where
+            bottomLeft pa pb = case ord of
+                               LT -> pa
+                               GT -> pb
+                               EQ -> pa
+                       where ord = (compare `on` (\ (Point x y) -> (y, x))) pa pb
+
+        -- Sort other points based on angle
+        rests = tail (sortBy (compare `on` compkey pt0) points) where
+            compkey (Point (Unit x0) (Unit y0)) (Point (Unit x) (Unit y)) = (atan2 (fromRational (y - y0)) (fromRational (x - x0)),
+                                       abs (x - x0))
+
+        -- Scan the points to find out convex
+        -- -- handle the case that all points are collinear
+        scan [p0] (p1:ps)
+            | isTurned pz p0 p1 == STRAIGHT = [pz, p0]
+            where pz = last ps
+
+        scan (x:xs) (y:z:rsts) = case isTurned x y z of
+            RIGHT    -> scan xs (x:z:rsts)
+            STRAIGHT -> scan (x:xs) (z:rsts) -- skip collinear points
+            LEFT     -> scan (y:x:xs) (z:rsts)
+
+        scan xs [z] = z : xs
+
+data Direction = LEFT | RIGHT | STRAIGHT
+               deriving (Show, Eq)
+
+isTurned :: Point -> Point -> Point -> Direction
+isTurned (Point ax ay) (Point bx by) (Point cx cy) = case sign of
+    EQ -> STRAIGHT
+    LT -> RIGHT
+    GT -> LEFT
+    where sign = compare ((bx - ax) * (cy - ay)) ((cx - ax) * (by - ay))
