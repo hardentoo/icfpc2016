@@ -7,7 +7,11 @@ import           Manipulation
 import           Problem
 import qualified Solution
 
-data Paper = Paper { paperPolygons :: [Polygon] }
+data Paper = Paper
+  {
+    paperPolygons :: [Polygon]
+  , paperMovements :: [(Point, Point)]
+  }
   deriving Show
 
 instance Eq Paper where
@@ -16,12 +20,13 @@ instance Eq Paper where
     rdiff = (paperPolygons p2) \\ (paperPolygons p1)
 
 polygonsAlongEdge :: Paper -> Edge -> [Polygon]
-polygonsAlongEdge (Paper polygons) edge = filter (elem edge . polygonEdges) polygons
+polygonsAlongEdge paper edge = filter (elem edge . polygonEdges) (paperPolygons paper)
 
 unfoldPolygonsAlongEdge :: Paper -> Edge -> [Polygon] -> [Paper]
 unfoldPolygonsAlongEdge paper edge polygons = filter isConsistent [retained] where
   --moved    = Paper (mirrored ++ (paperPolygons paper \\ polygons))
-  retained = Paper (mirrored ++ paperPolygons paper)
+  retained = Paper (mirrored ++ paperPolygons paper) (changes ++ paperMovements paper)
+  changes  = concat $ zipWith traceMirroring polygons mirrored :: [(Point, Point)]
   mirrored = map (mirrorPolygon edge) polygons
 
 -- Are we missing some filter here? The restriction is implicitly in "the
@@ -65,19 +70,18 @@ isConsistent :: Paper -> Bool
 isConsistent paper = and [ predicate paper | predicate <- predicates ] where
   predicates = [isOversize, fitsInBounds]
 
-mirrorPolygon :: Edge -> Polygon -> Polygon
-mirrorPolygon edge = Polygon PositivePoly . mirrorPoints edge . polygonVertices
-
 -- The joys of conversion
 
 fromProblem :: Problem -> Paper
-fromProblem = Paper . map (Polygon PositivePoly . polygonVertices) . silPoly . probSilhouette
+fromProblem problem = Paper polygons [] where
+  polygons = (map (Polygon PositivePoly . polygonVertices) . silPoly . probSilhouette) problem
 
 toProblem :: Paper -> Problem
-toProblem (Paper polygons) =
+toProblem paper =
   Problem (Silhouette
            ((Polygon PositivePoly) <$> polygonVertices <$> polygons)
-           (Skeleton $ concatMap polygonEdges polygons))
+           (Skeleton $ concatMap polygonEdges polygons)) where
+    polygons = paperPolygons paper
 
 toSolution :: Paper -> Solution.Solution
 toSolution = undefined
@@ -85,7 +89,7 @@ toSolution = undefined
 
 -- some possible example cases
 sampleMiniPaper :: Paper
-sampleMiniPaper = Paper samplePolygons where
+sampleMiniPaper = Paper samplePolygons [] where
   samplePolygons =
     [
       Polygon

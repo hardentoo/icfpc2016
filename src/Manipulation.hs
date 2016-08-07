@@ -1,6 +1,7 @@
 module Manipulation
   (
-    mirrorPoints
+    mirrorPolygon
+  , traceMirroring
   , areaSum
   )
 where
@@ -20,6 +21,12 @@ destructure (Point (Unit x) (Unit y)) = [x,y]
 
 restructure :: [Rational] -> Point
 restructure [x,y] = Point (Unit x) (Unit y)
+
+mirrorPolygon :: Edge -> Polygon -> Polygon
+mirrorPolygon edge = Polygon PositivePoly . mirrorPoints edge . polygonVertices
+
+traceMirroring :: Polygon -> Polygon -> [(Point, Point)]
+traceMirroring from to = zip (polygonVertices from) (polygonVertices to)
 
 mirrorPoints :: Edge -> [Point] -> [Point]
 mirrorPoints edge points = matrixToPoints mirroredMatrix where
