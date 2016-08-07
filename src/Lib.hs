@@ -3,6 +3,7 @@
 module Lib
   (
     parseProblem
+  , showProblem
   , solve
   , unfolds
   , unfoldsToLevel

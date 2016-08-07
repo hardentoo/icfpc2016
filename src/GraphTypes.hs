@@ -25,6 +25,7 @@ import qualified Data.Tree           as T
 
 data Edge  = Edge { start :: Point
                   , end   :: Point }
+           deriving Show
 
 instance Eq Edge where
   Edge a b == Edge a' b' = (a, b) == (a', b') || (a, b) == (b', a')
@@ -39,11 +40,11 @@ squaredEdgeLength :: Num a => Edge -> Rational
 squaredEdgeLength e = squaredDistanceBetween (start e) (end e)
 
 newtype Unit = Unit { unitVal :: Rational }
-  deriving (Eq, Num, Ord)
+  deriving (Eq, Num, Ord, Show)
 
 data Point = Point { pointX :: Unit
                    , pointY :: Unit }
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show)
 
 squaredDistanceBetween :: Point -> Point -> Rational
 squaredDistanceBetween p1 p2 = unitVal $ sq (pointX p2 - pointX p1) + sq (pointY p2 - pointY p1)
@@ -52,10 +53,11 @@ sq :: Num a => a -> a
 sq a = a * a
 
 data PolygonType = PositivePoly | NegativePoly
-  deriving Eq
+  deriving (Eq, Show)
 
 data Polygon = Polygon { polygonType     :: PolygonType
                        , polygonVertices :: [Point] }
+             deriving Show
 
 polygonEdges :: Polygon -> [Edge]
 polygonEdges (Polygon _ vertices) = (uncurry Edge) <$> zip vertices (tail $ cycle vertices)
@@ -113,24 +115,5 @@ pointsAreClockwise [] = True
 pointsAreClockwise xs@(x:rest) = 0 < sum (uncurry crossProduct <$> zip xs (rest ++ [x]))
   -- shoelace https://en.wikipedia.org/wiki/Shoelace_formula
   where crossProduct (Point (Unit x) (Unit y)) (Point (Unit x') (Unit y')) = (x' - x) * (y + y')
-
-
-instance Show Polygon where
-  show (Polygon polytype verts) =
-    show (length sortedVerts) ++ "\n" ++ unlines (show <$> sortedVerts)
-    where sortedVerts = case (polytype, pointsAreClockwise verts) of
-            (PositivePoly, True) -> reverse verts
-            (NegativePoly, False) -> reverse verts
-            _ -> verts
-
-instance Show Edge where
-  show (Edge start end) = show start ++ " " ++ show end
-
-instance Show Unit where
-  show (Unit amount) = show (numerator amount) ++
-    if 1 /= denominator amount then "/" ++ show (denominator amount) else ""
-
-instance Show Point where
-  show (Point x y) = show x ++ "," ++ show y
 
 

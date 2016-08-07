@@ -1,5 +1,13 @@
 -- | Problem data types and serialisation
-module Problem where
+module Problem
+  (
+    Problem(..)
+  , Silhouette(..)
+  , Skeleton(..)
+  , showProblem
+  , parseProblem
+  )
+where
 
 import           Control.Monad      (replicateM)
 import           Data.Ratio         (denominator, numerator, (%))
@@ -16,16 +24,41 @@ data Silhouette = Silhouette { silPoly :: [Polygon]
 data Skeleton = Skeleton { skelEdges :: [Edge] }
 
 
-instance Show Problem where
-  show (Problem s) = show s
+-- Printing
 
-instance Show Silhouette where
-  show (Silhouette polys skel) =
-    show (length polys) ++ "\n" ++ concatMap show polys ++ show skel
+class ShowProblem a where
+  showProblem :: a -> String
 
-instance Show Skeleton where
-  show (Skeleton segs) =
-    show (length segs) ++ "\n" ++ unlines (show <$> segs)
+instance ShowProblem Problem where
+  showProblem (Problem s) = showProblem s
+
+instance ShowProblem Silhouette where
+  showProblem (Silhouette polys skel) =
+    show (length polys) ++ "\n" ++ concatMap showProblem polys ++ showProblem skel
+
+instance ShowProblem Skeleton where
+  showProblem (Skeleton segs) =
+    show (length segs) ++ "\n" ++ unlines (showProblem <$> segs)
+
+instance ShowProblem Polygon where
+  showProblem (Polygon polytype verts) =
+    show (length sortedVerts) ++ "\n" ++ unlines (showProblem <$> sortedVerts)
+    where sortedVerts = case (polytype, pointsAreClockwise verts) of
+            (PositivePoly, True) -> reverse verts
+            (NegativePoly, False) -> reverse verts
+            _ -> verts
+
+instance ShowProblem Edge where
+  showProblem (Edge start end) = showProblem start ++ " " ++ showProblem end
+
+instance ShowProblem Unit where
+  showProblem (Unit amount) = show (numerator amount) ++
+    if 1 /= denominator amount then "/" ++ show (denominator amount) else ""
+
+instance ShowProblem Point where
+  showProblem (Point x y) = showProblem x ++ "," ++ showProblem y
+
+
 
 
 -- PARSING

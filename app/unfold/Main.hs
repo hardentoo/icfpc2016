@@ -11,7 +11,7 @@ main = do
   result <- parseProblem <$> getContents
   case result of
     Right problem ->
-      mapM_ print $ case depthArg of
-                      ('@':rest) -> historyOfUnfolding (read rest) problem
-                      _          -> unfoldsToLevel (read depthArg) problem
+      mapM_ (putStr . showProblem) $ case depthArg of
+                                       ('@':rest) -> historyOfUnfolding (read rest) problem
+                                       _          -> unfoldsToLevel (read depthArg) problem
     Left err -> die (show err)
