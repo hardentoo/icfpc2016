@@ -42,7 +42,7 @@ squaredEdgeLength :: Num a => Edge -> Rational
 squaredEdgeLength e = squaredDistanceBetween (start e) (end e)
 
 newtype Unit = Unit { unitVal :: Rational }
-  deriving (Eq, Num, Ord)
+  deriving (Eq, Num, Fractional, Ord)
 
 instance Show Unit where
   show (Unit v) = show (numerator v) ++
