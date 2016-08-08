@@ -8,6 +8,7 @@ module Lib
   , unfolds
   , unfoldsToLevel
   , historyOfUnfolding
+  , readPaper
   )
 where
 
@@ -36,3 +37,12 @@ historyOfUnfolding idx = fmap (Paper.toProblem) . reverse . (!! idx) . concat . 
 
 unfoldLevels :: Problem -> [[[Paper.Paper]]]
 unfoldLevels = T.levels . Solver.exploreUnfolds . Paper.fromProblem
+
+
+
+readPaper :: Int -> IO Paper.Paper
+readPaper n = do
+  text <- readFile ("problems/problem_" ++ show n)
+  case parseProblem text of
+    Right problem -> return $ Paper.fromProblem problem
+    _ -> error "couldn't parse problem"
