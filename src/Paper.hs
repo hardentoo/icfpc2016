@@ -16,8 +16,8 @@ data Paper = Paper
 
 instance Eq Paper where
   p1 == p2 = null $ ldiff `union` rdiff where
-    ldiff = (paperPolygons p1) \\ (paperPolygons p2)
-    rdiff = (paperPolygons p2) \\ (paperPolygons p1)
+    ldiff = paperPolygons p1 \\ paperPolygons p2
+    rdiff = paperPolygons p2 \\ paperPolygons p1
 
 polygonsAlongEdge :: Paper -> Edge -> [Polygon]
 polygonsAlongEdge paper edge = filter (elem edge . polygonEdges) (paperPolygons paper)
@@ -38,7 +38,7 @@ unfoldableEdges = nub . concatMap polygonEdges . paperPolygons
 unfoldsAlongEdge :: Paper -> Edge -> [Paper]
 unfoldsAlongEdge paper edge = concatMap (unfoldPolygonsAlongEdge paper edge) polygonSets
   where
-    polygonSets = filter (not . null) . powerset $ (paperPolygons paper)
+    polygonSets = filter (not . null) . powerset $ paperPolygons paper
 
 powerset :: [a] -> [[a]]
 powerset [] = [[]]
@@ -50,7 +50,7 @@ unfolds paper
   | otherwise = []
 
 unionArea :: Paper -> Rational
-unionArea = areaSum . (fmap polygonVertices) . paperPolygons
+unionArea = areaSum . fmap polygonVertices . paperPolygons
 
 isFolded :: Paper -> Bool
 isFolded = (1 /=) . unionArea
@@ -60,7 +60,7 @@ isOversize = (1 <) . unionArea
 
 fitsInBounds :: Paper -> Bool
 fitsInBounds paper = (maxX - minX) <= 1 && (maxY - minY) <= 1 where
-  vertices = concat . (map polygonVertices) . paperPolygons $ paper
+  vertices = concatMap polygonVertices . paperPolygons $ paper
   xPoints  = map pointX vertices
   yPoints  = map pointY vertices
   (minX, maxX) = (minimum xPoints, maximum xPoints)
@@ -93,8 +93,8 @@ sampleMiniPaper = Paper samplePolygons [] where
       Polygon
       PositivePoly
         [
-          (Point 0 0),
-          (Point 0 (Unit (1 % 2))),
-          (Point 1 1)
+          Point 0 0,
+          Point 0 (Unit (1 % 2)),
+          Point 1 1
         ]
     ]

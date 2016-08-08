@@ -39,7 +39,7 @@ instance Show Edge where
   show (Edge x y) = "Edge (" ++ show x ++ " => " ++ show y ++ ")"
 
 edgesMeet :: Edge -> Edge -> Bool
-edgesMeet (Edge a b) (Edge a' b') = not (null (intersect [a, b] [a', b']))
+edgesMeet (Edge a b) (Edge a' b') = not (null ([a, b] `intersect` [a', b']))
 
 squaredEdgeLength :: Num a => Edge -> Rational
 squaredEdgeLength e = squaredDistanceBetween (start e) (end e)
@@ -49,7 +49,7 @@ newtype Unit = Unit { unitVal :: Rational }
 
 instance Show Unit where
   show (Unit v) = show (numerator v) ++
-    (if 1 == (denominator v) then "" else "/" ++ show (denominator v))
+    (if 1 == denominator v then "" else "/" ++ show (denominator v))
 
 data Point = Point { pointX :: Unit
                    , pointY :: Unit }
@@ -72,7 +72,7 @@ data Polygon = Polygon { polygonType     :: PolygonType
              deriving Show
 
 polygonEdges :: Polygon -> [Edge]
-polygonEdges (Polygon _ vertices) = (uncurry Edge) <$> zip vertices (tail $ cycle vertices)
+polygonEdges (Polygon _ vertices) = uncurry Edge <$> zip vertices (tail $ cycle vertices)
 
 instance Eq Polygon where
   p1 == p2 = (polygonType p1 == polygonType p2) && (e1 == nub (e1 ++ e2))
@@ -83,7 +83,7 @@ instance Eq Polygon where
 
 splitAtIntersections :: [Edge] -> [Edge]
 splitAtIntersections edges =
-  let pairs = [(e1, e2) | e1 <- edges, e2 <- (delete e1 edges)]
+  let pairs = [(e1, e2) | e1 <- edges, e2 <- delete e1 edges]
       allSplits = uncurry edgesSplitAtIntersections <$> pairs
       pairsWithSplits = filter (not . null . snd) $ zip pairs allSplits
   in
@@ -110,7 +110,7 @@ edgeIntersection (Edge (Point p0_x p0_y) (Point p1_x p1_y)) (Edge (Point p2_x p2
       s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / det
       t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / det
     in
-    if (det /= 0 && s >= 0 && s <= 1 && t >= 0 && t <= 1)
+    if det /= 0 && s >= 0 && s <= 1 && t >= 0 && t <= 1
     then Just $ Point (p0_x + (t * s1_x)) (p0_y + (t * s1_y))
     else Nothing
 
@@ -120,8 +120,8 @@ edgesToPolygons ptype edges = nub $ (Polygon ptype . init . edgesToPoints) <$> e
 
 edgesToPoints :: [Edge] -> [Point]
 edgesToPoints [] = []
-edgesToPoints [(Edge a b)] = [a, b]
-edgesToPoints ((Edge a b):e2:es) =
+edgesToPoints [Edge a b] = [a, b]
+edgesToPoints (Edge a b : (e2:es)) =
   case joinEdge b e2 of
     Just p -> [a, b, p] ++ joins p es
     Nothing -> case joinEdge a e2 of
@@ -157,17 +157,17 @@ edgesFormBadLoop :: [Edge] -> Bool
 edgesFormBadLoop edges = any edgesFormCorrectLoop (tails (tail edges))
 
 edgeGroupings :: ([Edge], [Edge]) -> (Maybe [Edge], [([Edge], [Edge])])
-edgeGroupings (sofar, nexts) =
-  if edgesFormCorrectLoop sofar then (Just sofar, [])
-  else if edgesFormBadLoop sofar then (Nothing, [])
-  else (Nothing,) $ do
-    next <- nexts
-    let remaining = delete next nexts
-    if next `edgesMeet` (head sofar)
-    then return (next:sofar, remaining)
-    else if next `edgesMeet` (last sofar)
-    then return (sofar ++ [next], remaining)
-    else empty
+edgeGroupings (sofar, nexts)
+  | edgesFormCorrectLoop sofar = (Just sofar, [])
+  | edgesFormBadLoop sofar     = (Nothing, [])
+  | otherwise                  = (Nothing,) $ do
+      next <- nexts
+      let remaining = delete next nexts
+      if next `edgesMeet` head sofar
+      then return (next:sofar, remaining)
+      else if next `edgesMeet` last sofar
+      then return (sofar ++ [next], remaining)
+      else empty
 
 
 pointsAreClockwise :: [Point] -> Bool
