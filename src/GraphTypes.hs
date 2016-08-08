@@ -12,13 +12,16 @@ module GraphTypes
   , Polygon(..)
   , polygonEdges
   , edgesToPolygons
+  , splitAtIntersections
   )
 where
 
 import           Control.Applicative (empty)
 import           Data.Function       (on)
-import           Data.List           (delete, intersect, nub, sort, union)
-import           Data.Maybe          (catMaybes, fromJust)
+import           Data.List           (delete, intersect, nub, sort, tails,
+                                      union, (\\))
+import           Data.Maybe          (catMaybes, fromJust, fromMaybe,
+                                      listToMaybe)
 import           Data.Ratio          (denominator, numerator, (%))
 import           Data.Tree           (Tree)
 import qualified Data.Tree           as T
@@ -77,6 +80,41 @@ instance Eq Polygon where
       e1 = polygonEdges p1
       e2 = polygonEdges p2
 
+
+splitAtIntersections :: [Edge] -> [Edge]
+splitAtIntersections edges =
+  let pairs = [(e1, e2) | e1 <- edges, e2 <- (delete e1 edges)]
+      allSplits = uncurry edgesSplitAtIntersections <$> pairs
+      pairsWithSplits = filter (not . null . snd) $ zip pairs allSplits
+  in
+    case listToMaybe pairsWithSplits of
+      Just ((e1, e2), splits) -> splitAtIntersections ((edges \\ [e1, e2]) ++ splits)
+      Nothing -> edges
+
+edgesSplitAtIntersections :: Edge -> Edge -> [Edge]
+edgesSplitAtIntersections e1@(Edge a b) e2@(Edge a' b') =
+  if edgesMeet e1 e2 then []
+  else case edgeIntersection e1 e2 of
+         Just point -> Edge point <$> filter (point /=) [a, b, a', b']
+         _          -> []
+
+-- http://stackoverflow.com/a/1968345
+edgeIntersection :: Edge -> Edge -> Maybe Point
+edgeIntersection (Edge (Point p0_x p0_y) (Point p1_x p1_y)) (Edge (Point p2_x p2_y) (Point p3_x p3_y)) =
+    let
+      s1_x = p1_x - p0_x
+      s1_y = p1_y - p0_y
+      s2_x = p3_x - p2_x
+      s2_y = p3_y - p2_y
+      det = (-s2_x * s1_y + s1_x * s2_y)
+      s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / det
+      t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / det
+    in
+    if (det /= 0 && s >= 0 && s <= 1 && t >= 0 && t <= 1)
+    then Just $ Point (p0_x + (t * s1_x)) (p0_y + (t * s1_y))
+    else Nothing
+
+
 edgesToPolygons :: PolygonType -> [Edge] -> [Polygon]
 edgesToPolygons ptype edges = nub $ (Polygon ptype . init . edgesToPoints) <$> edgeLoops edges
 
@@ -88,11 +126,20 @@ edgesToPoints ((Edge a b):e2:es) =
     Just p -> [a, b, p] ++ joins p es
     Nothing -> case joinEdge a e2 of
                  Just p -> [b, a, p] ++ joins p es
+                 _ -> error "unconnected edge"
   where
     joins :: Point -> [Edge] -> [Point]
     joins _ [] = []
     joins p (e:es) = nxt : joins nxt es
       where nxt = fromJust (joinEdge p e)
+
+
+sampleEdges = [ Edge (Point 0 0)     (Point (1/2) 0)
+              , Edge (Point 0 0)     (Point 0     (2/3))
+              , Edge (Point (1/2) 0) (Point (1/2) (2/3))
+              , Edge (Point 0 (1/3)) (Point (1/2) (1/3))
+              , Edge (Point 0 (2/3)) (Point (1/2) (2/3))]
+
 
 joinEdge :: Point -> Edge -> Maybe Point
 joinEdge p (Edge a b) | p == a = Just b
@@ -102,13 +149,17 @@ joinEdge _ _ = Nothing
 edgeLoops :: [Edge] -> [[Edge]]
 edgeLoops edges = catMaybes $ concatMap T.flatten $ T.unfoldForest edgeGroupings [([e], delete e edges) | e <- edges ]
 
-edgesFormLoop :: [Edge] -> Bool
-edgesFormLoop (e:_:es@(_:_)) = edgesMeet e (last es)
-edgesFormLoop _ = False
+edgesFormCorrectLoop :: [Edge] -> Bool
+edgesFormCorrectLoop (e:_:es@(_:_)) = edgesMeet e (last es)
+edgesFormCorrectLoop _ = False
+
+edgesFormBadLoop :: [Edge] -> Bool
+edgesFormBadLoop edges = any edgesFormCorrectLoop (tails (tail edges))
 
 edgeGroupings :: ([Edge], [Edge]) -> (Maybe [Edge], [([Edge], [Edge])])
 edgeGroupings (sofar, nexts) =
-  if edgesFormLoop sofar then (Just sofar, [])
+  if edgesFormCorrectLoop sofar then (Just sofar, [])
+  else if edgesFormBadLoop sofar then (Nothing, [])
   else (Nothing,) $ do
     next <- nexts
     let remaining = delete next nexts
