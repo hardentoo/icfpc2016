@@ -20,6 +20,9 @@ Javascript, the Canvas API and a sprinkling of Ruby. This soon allowed
 us to visualise and browse the problems. He also wrote a tool to fetch
 problem definitions from the contest server for local processing.
 
+
+![Viewer screenshot with sample problem](screenshots/viewer-screenshot.png)
+
 In the meantime, Michael & Steve wrote Haskell code for parsing
 problem definitions, and built a rough framework for our solver. This
 resulted in a "solver"" program and an "unfold" program, so that we
