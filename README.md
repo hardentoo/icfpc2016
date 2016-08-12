@@ -6,7 +6,7 @@ We're three programmer colleagues from varied backgrounds who decided
 to give ICFPC 2016 a try as a team, with the generous support of our
 employer.
 
-The [challenge this year](http://2016.icfpcontest.org/) was to infer
+The [challenge this year](https://icfpc2016.blogspot.co.nz/2016/08/task-description.html) was to infer
 from the shape of a folded Origami what the crease pattern of the
 unfolded square of paper would look like, and how points on the
 unfolded paper would map back to the folded version.
